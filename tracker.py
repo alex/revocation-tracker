@@ -291,7 +291,6 @@ def run(port, db_uri):
             TCP4ServerEndpoint(reactor, port),
             server.Site(
                 wsgi.WSGIResource(reactor, reactor.getThreadPool(), app),
-                logPath="/dev/stdout",
             )
         ).setServiceParent(multi)
 
