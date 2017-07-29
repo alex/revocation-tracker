@@ -1,0 +1,11 @@
+werkzeug
+twisted
+click
+pathlib
+jinja2
+psycopg2
+cryptography
+attrs
+lxml
+cssselect
+sqlalchemy
