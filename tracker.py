@@ -237,7 +237,11 @@ class WSGIApplication(object):
         )
 
     def add_certificate(self, request):
-        crtsh_id = int(request.form["crtsh-id"])
+        try:
+            crtsh_id = int(request.form["crtsh-id"])
+        except ValueError:
+            return redirect("/")
+
         if self.cert_db.already_tracked(crtsh_id):
             return redirect("/")
         raw_cert = self.crtsh_checker.fetch_details(crtsh_id)
