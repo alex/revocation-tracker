@@ -127,6 +127,13 @@ class CertificateDatabase(object):
 
     def mark_revoked(self, cert, revocation_date):
         cert.revoked_at = revocation_date
+        self._engine.execute(
+            self._certs.update().where(
+                self._certs.c.crtsh_id == cert.certificate.crtsh_id
+            ).values(
+                revoked_at=revocation_date
+            )
+        )
 
 
 class CrtshChecker(object):
