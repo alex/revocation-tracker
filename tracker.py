@@ -12,8 +12,6 @@ import jinja2
 
 from pathlib import Path
 
-import psycopg2
-
 import sqlalchemy
 
 from twisted.application.internet import (
@@ -124,18 +122,15 @@ class CertificateDatabase(object):
 
 class CrtshChecker(object):
     def __init__(self):
-        # TODO: Switch to SQLAlchemy?
-        self._pg_conn = psycopg2.connect(
-            host="crt.sh", port=5432, user="guest", database="certwatch"
+        self._engine = sqlalchemy.create_engine(
+            "postgresql://guest@crt.sh:5432/certwatch"
         )
 
     def fetch_details(self, crtsh_id):
-        with self._pg_conn.cursor() as c:
-            c.execute(
-                "SELECT certificate FROM certificate WHERE id = %s",
-                [crtsh_id]
-            )
-            [cert_data] = c.fetchone()
+        [cert_data] = self._engine.execute(
+            "SELECT certificate FROM certificate WHERE id = %s",
+            [crtsh_id]
+        ).fetchone()
 
         cert = x509.load_der_x509_certificate(
             bytes(cert_data), default_backend()
@@ -166,23 +161,21 @@ class CrtshChecker(object):
     def check_revocations(self, crtsh_ids):
         if not crtsh_ids:
             return {}
-        with self._pg_conn.cursor() as c:
-            c.execute("""
-            SELECT
-                c.id, crl.revocation_date
-            FROM
-                certificate c
-            INNER JOIN crl_revoked crl ON
-                (c.issuer_ca_id, x509_serialnumber(c.certificate)) =
-                (crl.ca_id, crl.serial_number)
-            WHERE
-                c.id IN %s
-            """, [tuple(crtsh_ids)])
-            rows = c.fetchall()
-            revocation_dates = {}
-            for (crtsh_id, revocation_date) in rows:
-                revocation_dates[crtsh_id] = revocation_date
-            return revocation_dates
+        rows = self._engine.execute("""
+        SELECT
+            c.id, crl.revocation_date
+        FROM
+            certificate c
+        INNER JOIN crl_revoked crl ON
+            (c.issuer_ca_id, x509_serialnumber(c.certificate)) =
+            (crl.ca_id, crl.serial_number)
+        WHERE
+            c.id IN %s
+        """, [(tuple(crtsh_ids),)])
+        revocation_dates = {}
+        for (crtsh_id, revocation_date) in rows:
+            revocation_dates[crtsh_id] = revocation_date
+        return revocation_dates
 
 
 class WSGIApplication(object):
