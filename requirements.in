@@ -4,7 +4,7 @@ click
 pathlib
 jinja2
 psycopg2
-cryptography
+-e git+https://github.com/pyca/cryptography#egg=cryptography
 attrs
 lxml
 cssselect

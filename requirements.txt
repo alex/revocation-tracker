@@ -4,24 +4,24 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-asn1crypto==0.22.0        # via cryptography
+-e git+https://github.com/pyca/cryptography#egg=cryptography
+asn1crypto==0.22.0
 attrs==17.2.0
 automat==0.6.0            # via twisted
 click==6.7
 constantly==15.1.0        # via twisted
-cryptography==2.0.2
 cssselect==1.0.1
-enum34==1.1.6             # via cryptography
+enum34==1.1.6
 hyperlink==17.3.0         # via twisted
-idna==2.5                 # via cryptography
+idna==2.5
 incremental==17.5.0       # via twisted
-ipaddress==1.0.18         # via cryptography
+ipaddress==1.0.18
 jinja2==2.9.6
 lxml==3.8.0
 markupsafe==1.0           # via jinja2
 pathlib==1.0.1
 psycopg2==2.7.3
-six==1.10.0               # via automat, cryptography
+six==1.10.0               # via automat
 sqlalchemy==1.1.12
 twisted==17.5.0
 werkzeug==0.12.2

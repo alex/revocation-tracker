@@ -138,14 +138,17 @@ class CrtshChecker(object):
         issuer_cn = cert.issuer.get_attributes_for_oid(
             x509.NameOID.COMMON_NAME
         )
-        sans = cert.extensions.get_extension_for_class(
+        san = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
-        ).value.get_values_for_type(x509.DNSName)
+        ).value
+        san_domains = [
+            n.bytes_value for n in san if isinstance(n, x509.DNSName)
+        ]
 
         return RawCertificateDetails(
             crtsh_id,
             ", ".join(a.value for a in subject_cn) if subject_cn else None,
-            sans,
+            san_domains,
             ", ".join(a.value for a in issuer_cn) if issuer_cn else None,
             cert.not_valid_after,
         )
