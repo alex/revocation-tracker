@@ -33,7 +33,7 @@
             </div>
 
             {% for label, certs in [("Still Valid", valid_certs), ("Expired", expired_certs), ("Revoked", revoked_certs)] %}
-                <h3>{{ label }}</h3>
+                <h3>{{ label }} ({{ certs|length }})</h3>
                 {% if certs %}
                     <table class="table table-striped">
                         <thead>
