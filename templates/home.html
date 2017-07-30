@@ -47,7 +47,11 @@
                         <tbody>
                             {% for cert in certs|sort(attribute="certificate.issuer_common_name") %}
                                 <tr>
-                                    <td><a href="https://crt.sh/?id={{ cert.certificate.crtsh_id }}"><code>{{ cert.certificate.crtsh_id }}</code></a></td>
+                                    <td>
+                                        <a href="https://crt.sh/?id={{ cert.certificate.crtsh_id }}&opt=cablint">
+                                            <code>{{ cert.certificate.crtsh_id }}</code>
+                                        </a>
+                                    </td>
                                     <td><code>{{ cert.certificate.issuer_common_name }}</code></td>
                                     <td><code>{{ cert.certificate.common_name }}</code></td>
                                     <td>
