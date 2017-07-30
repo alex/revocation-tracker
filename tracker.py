@@ -54,14 +54,23 @@ class CertificateDatabase(object):
         self._certs = sqlalchemy.Table(
             "certificates", self._metadata,
             sqlalchemy.Column(
-                "crtsh_id", sqlalchemy.Integer(), primary_key=True, nullable=False
+                "crtsh_id",
+                sqlalchemy.Integer(),
+                primary_key=True,
+                nullable=False
             ),
             sqlalchemy.Column("common_name", sqlalchemy.Unicode),
             # JSON encoded array of strings.
-            sqlalchemy.Column("san_dns_names", sqlalchemy.Unicode, nullable=False),
+            sqlalchemy.Column(
+                "san_dns_names", sqlalchemy.Unicode, nullable=False
+            ),
             sqlalchemy.Column("issuer_common_name", sqlalchemy.Unicode),
-            sqlalchemy.Column("expiration_date", sqlalchemy.DateTime, nullable=False),
-            sqlalchemy.Column("added_at", sqlalchemy.DateTime, nullable=False),
+            sqlalchemy.Column(
+                "expiration_date", sqlalchemy.DateTime, nullable=False
+            ),
+            sqlalchemy.Column(
+                "added_at", sqlalchemy.DateTime, nullable=False
+            ),
             sqlalchemy.Column("revoked_at", sqlalchemy.DateTime),
         )
         self._engine = sqlalchemy.create_engine(db_uri)
