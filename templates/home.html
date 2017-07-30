@@ -34,32 +34,36 @@
 
             {% for label, certs in [("Still Valid", valid_certs), ("Expired", expired_certs), ("Revoked", revoked_certs)] %}
                 <h3>{{ label }}</h3>
-                <table class="table table-striped">
-                    <thead>
-                        <th>crt.sh id</th>
-                        <th>Issuer Common Name</th>
-                        <th>Subject Common Name</th>
-                        <th>SAN dNSNames</th>
-                        <th>Added</th>
-                        <th>Expires on</th>
-                    </thead>
-                    <tbody>
-                        {% for cert in certs|sort(attribute="certificate.issuer_common_name") %}
-                            <tr>
-                                <td><a href="https://crt.sh/?id={{ cert.certificate.crtsh_id }}"><code>{{ cert.certificate.crtsh_id }}</code></a></td>
-                                <td><code>{{ cert.certificate.issuer_common_name }}</code></td>
-                                <td><code>{{ cert.certificate.common_name }}</code></td>
-                                <td>
-                                    {% for n in cert.certificate.san_dns_names %}
-                                        <code>{{ n }}</code>{% if not loop.last %},{% endif %}
-                                    {% endfor %}
-                                </td>
-                                <td><time class="timeago" datetime="{{ cert.added_at }}Z"></time></td>
-                                <td>{{ cert.certificate.expiration_date.date() }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                {% if certs %}
+                    <table class="table table-striped">
+                        <thead>
+                            <th>crt.sh id</th>
+                            <th>Issuer Common Name</th>
+                            <th>Subject Common Name</th>
+                            <th>SAN dNSNames</th>
+                            <th>Added</th>
+                            <th>Expires on</th>
+                        </thead>
+                        <tbody>
+                            {% for cert in certs|sort(attribute="certificate.issuer_common_name") %}
+                                <tr>
+                                    <td><a href="https://crt.sh/?id={{ cert.certificate.crtsh_id }}"><code>{{ cert.certificate.crtsh_id }}</code></a></td>
+                                    <td><code>{{ cert.certificate.issuer_common_name }}</code></td>
+                                    <td><code>{{ cert.certificate.common_name }}</code></td>
+                                    <td>
+                                        {% for n in cert.certificate.san_dns_names %}
+                                            <code>{{ n }}</code>{% if not loop.last %},{% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td><time class="timeago" datetime="{{ cert.added_at }}Z"></time></td>
+                                    <td>{{ cert.certificate.expiration_date.date() }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No certs in this category</p>
+                {% endif %}
             {% endfor %}
         </div>
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
