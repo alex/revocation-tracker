@@ -142,7 +142,8 @@ class CrtshChecker(object):
             x509.SubjectAlternativeName
         ).value
         san_domains = [
-            n.bytes_value for n in san if isinstance(n, x509.DNSName)
+            n.bytes_value.decode("utf8", "replace")
+            for n in san if isinstance(n, x509.DNSName)
         ]
 
         return RawCertificateDetails(
