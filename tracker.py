@@ -84,6 +84,15 @@ class CertificateDatabase(object):
             revoked_at=cert.revoked_at,
         ))
 
+    def already_tracked(self, crtsh_id):
+        return self._engine.execute(
+            sqlalchemy.sql.select([
+                sqlalchemy.sql.exists(self._certs.select().where(
+                    self._certs.c.crtsh_id == crtsh_id
+                ))
+            ])
+        ).scalar()
+
     def _cert_from_row(self, row):
         return CertificateTrackingDetails(
             RawCertificateDetails(
@@ -229,6 +238,8 @@ class WSGIApplication(object):
 
     def add_certificate(self, request):
         crtsh_id = int(request.form["crtsh-id"])
+        if self.cert_db.already_tracked(crtsh_id):
+            return redirect("/")
         raw_cert = self.crtsh_checker.fetch_details(crtsh_id)
         revocation_dates = self.crtsh_checker.check_revocations([crtsh_id])
 
