@@ -38,30 +38,33 @@
                     <table class="table table-striped">
                         <thead>
                             <th>crt.sh id</th>
-                            <th>Issuer Common Name</th>
                             <th>Subject Common Name</th>
                             <th>SAN dNSNames</th>
                             <th>Started tracking</th>
                             <th>Expires on</th>
                         </thead>
                         <tbody>
-                            {% for cert in certs|sort(attribute="certificate.issuer_common_name") %}
+                            {% for group in certs|sort(attribute="certificate.issuer_common_name")|groupby("certificate.issuer_common_name") %}
                                 <tr>
-                                    <td>
-                                        <a href="https://crt.sh/?id={{ cert.certificate.crtsh_id }}&opt=cablint">
-                                            <code>{{ cert.certificate.crtsh_id }}</code>
-                                        </a>
-                                    </td>
-                                    <td><code>{{ cert.certificate.issuer_common_name }}</code></td>
-                                    <td><code>{{ cert.certificate.common_name }}</code></td>
-                                    <td>
-                                        {% for n in cert.certificate.san_dns_names %}
-                                            <code>{{ n }}</code>{% if not loop.last %},{% endif %}
-                                        {% endfor %}
-                                    </td>
-                                    <td><time class="timeago" datetime="{{ cert.added_at }}Z"></time></td>
-                                    <td>{{ cert.certificate.expiration_date.date() }}</td>
+                                    <td colspan="6"><strong>{{ group.grouper }}</strong></td>
                                 </tr>
+                                {% for cert in group.list|sort(attribute="certificate.expiration_date") %}
+                                    <tr>
+                                        <td>
+                                            <a href="https://crt.sh/?id={{ cert.certificate.crtsh_id }}&opt=cablint">
+                                                <code>{{ cert.certificate.crtsh_id }}</code>
+                                            </a>
+                                        </td>
+                                        <td><code>{{ cert.certificate.common_name }}</code></td>
+                                        <td>
+                                            {% for n in cert.certificate.san_dns_names %}
+                                                <code>{{ n }}</code>{% if not loop.last %},{% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td><time class="timeago" datetime="{{ cert.added_at }}Z"></time></td>
+                                        <td>{{ cert.certificate.expiration_date.date() }}</td>
+                                    </tr>
+                                {% endfor %}
                             {% endfor %}
                         </tbody>
                     </table>
