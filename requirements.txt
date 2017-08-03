@@ -22,7 +22,7 @@ markupsafe==1.0           # via jinja2
 pathlib==1.0.1
 psycopg2==2.7.3
 six==1.10.0               # via automat
-sqlalchemy==1.1.12
+sqlalchemy==1.1.13
 twisted==17.5.0
 werkzeug==0.12.2
 zope.interface==4.4.2     # via twisted
