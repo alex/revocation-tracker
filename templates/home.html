@@ -32,50 +32,7 @@
                 </div>
             </div>
 
-            {% for label, certs in [("Still Valid", valid_certs), ("Expired", expired_certs), ("Revoked", revoked_certs)] %}
-                <h3>{{ label }} ({{ certs|length }})</h3>
-                {% if certs %}
-                    <table class="table table-striped">
-                        <thead>
-                            <th>crt.sh id</th>
-                            <th>Subject Common Name</th>
-                            <th>SAN dNSNames</th>
-                            <th>Started tracking</th>
-                            <th>Expires on</th>
-                        </thead>
-                        <tbody>
-                            {% for group in certs|sort(attribute="certificate.issuer_common_name")|groupby("certificate.issuer_common_name") %}
-                                <tr>
-                                    <td colspan="6"><strong>{{ group.grouper }}</strong></td>
-                                </tr>
-                                {% for cert in group.list|sort(attribute="certificate.expiration_date") %}
-                                    <tr>
-                                        <td>
-                                            <a href="https://crt.sh/?id={{ cert.certificate.crtsh_id }}&opt=cablint">
-                                                <code>{{ cert.certificate.crtsh_id }}</code>
-                                            </a>
-                                        </td>
-                                        <td><code>{{ cert.certificate.common_name }}</code></td>
-                                        <td>
-                                            {% if cert.certificate.san_dns_names %}
-                                                {% for n in cert.certificate.san_dns_names %}
-                                                    <code>{{ n }}</code>{% if not loop.last %},{% endif %}
-                                                {% endfor %}
-                                            {% else %}
-                                                <code>{{ cert.certificate.san_dns_names }}</code>
-                                            {% endif %}
-                                        </td>
-                                        <td><time class="timeago" datetime="{{ cert.added_at }}Z"></time></td>
-                                        <td>{{ cert.certificate.expiration_date.date() }}</td>
-                                    </tr>
-                                {% endfor %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <p>No certs in this category</p>
-                {% endif %}
-            {% endfor %}
+            {% include "_certs.html" %}
         </div>
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
