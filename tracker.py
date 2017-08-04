@@ -264,6 +264,7 @@ class WSGIApplication(object):
 
 
 def check_for_revocation(cert_db, crtsh_checker):
+    print("[checking for revocations]")
     (certs, _, _) = cert_db.get_all_certificates()
     revocations = crtsh_checker.check_revocations(
         [c.certificate.crtsh_id for c in certs]
