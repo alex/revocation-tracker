@@ -186,7 +186,9 @@ class CertificateDatabase(object):
         subquery = sqlalchemy.sql.select([
             self._batch_entries.c.crtsh_id
         ]).where(self._batch_entries.c.batch_id == batch_id)
-        query = self._certs.select().where(self._certs.c.crtsh_id.in_(subquery))
+        query = self._certs.select().where(
+            self._certs.c.crtsh_id.in_(subquery)
+        )
         return self._get_certificates(query)
 
 
@@ -315,7 +317,7 @@ class WSGIApplication(object):
         )
 
     def _add_crtsh_ids(self, crtsh_ids):
-        existing =  self.cert_db.already_tracked(crtsh_ids)
+        existing = self.cert_db.already_tracked(crtsh_ids)
         crtsh_ids = list(set(crtsh_ids) - existing)
 
         if not crtsh_ids:
