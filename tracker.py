@@ -357,6 +357,9 @@ class WSGIApplication(object):
 
     def batch(self, request, batch_id):
         batch_description = self.cert_db.get_description_for_batch(batch_id)
+        if batch_description is None:
+            return redirect("/")
+
         (valid_certs, expired_certs, revoked_certs) = (
             self.cert_db.get_certificates_for_batch(batch_id)
         )
