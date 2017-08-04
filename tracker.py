@@ -256,10 +256,11 @@ class WSGIApplication(object):
         )
 
     def _add_crtsh_ids(self, crtsh_ids):
-        crtsh_ids = list(set(crtsh_ids) - self.cert_db.already_tracked(crtsh_ids))
+        existing =  self.cert_db.already_tracked(crtsh_ids)
+        crtsh_ids = list(set(crtsh_ids) - existing)
 
         if not crtsh_ids:
-            return
+            return list(existing)
 
         raw_certs = self.crtsh_checker.fetch_details(crtsh_ids)
         revocation_dates = self.crtsh_checker.check_revocations(crtsh_ids)
@@ -273,6 +274,7 @@ class WSGIApplication(object):
             for raw_cert in raw_certs
         ]
         self.cert_db.add_certificates(certs)
+        return list(existing | set(c.certificate.crtsh_id for c in certs))
 
     def add_certificate(self, request):
         crtsh_ids = [
