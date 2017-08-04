@@ -57,9 +57,13 @@
                                         </td>
                                         <td><code>{{ cert.certificate.common_name }}</code></td>
                                         <td>
-                                            {% for n in cert.certificate.san_dns_names %}
-                                                <code>{{ n }}</code>{% if not loop.last %},{% endif %}
-                                            {% endfor %}
+                                            {% if cert.certificate.san_dns_names %}
+                                                {% for n in cert.certificate.san_dns_names %}
+                                                    <code>{{ n }}</code>{% if not loop.last %},{% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                <code>{{ cert.certificate.san_dns_names }}</code>
+                                            {% endif %}
                                         </td>
                                         <td><time class="timeago" datetime="{{ cert.added_at }}Z"></time></td>
                                         <td>{{ cert.certificate.expiration_date.date() }}</td>
