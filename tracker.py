@@ -73,16 +73,19 @@ class CertificateDatabase(object):
         )
         self._engine = sqlalchemy.create_engine(db_uri)
 
-    def add_certificate(self, cert):
-        self._engine.execute(self._certs.insert().values(
-            crtsh_id=cert.certificate.crtsh_id,
-            common_name=cert.certificate.common_name,
-            san_dns_names=json.dumps(cert.certificate.san_dns_names),
-            issuer_common_name=cert.certificate.issuer_common_name,
-            expiration_date=cert.certificate.expiration_date,
-            added_at=cert.added_at,
-            revoked_at=cert.revoked_at,
-        ))
+    def add_certificates(self, certs):
+        self._engine.execute(self._certs.insert().values([
+            {
+                "crtsh_id": cert.certificate.crtsh_id,
+                "common_name": cert.certificate.common_name,
+                "san_dns_names": json.dumps(cert.certificate.san_dns_names),
+                "issuer_common_name": cert.certificate.issuer_common_name,
+                "expiration_date": cert.certificate.expiration_date,
+                "added_at": cert.added_at,
+                "revoked_at": cert.revoked_at,
+            }
+            for cert in certs
+        ]))
 
     def already_tracked(self, crtsh_id):
         return self._engine.execute(
@@ -266,7 +269,7 @@ class WSGIApplication(object):
             datetime.datetime.utcnow(),
             revocation_dates.get(crtsh_id),
         )
-        self.cert_db.add_certificate(cert)
+        self.cert_db.add_certificates([cert])
         return redirect("/")
 
 
