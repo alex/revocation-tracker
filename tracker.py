@@ -87,14 +87,15 @@ class CertificateDatabase(object):
             for cert in certs
         ]))
 
-    def already_tracked(self, crtsh_id):
-        return self._engine.execute(
+    def already_tracked(self, crtsh_ids):
+        rows = self._engine.execute(
             sqlalchemy.sql.select([
-                sqlalchemy.sql.exists(self._certs.select().where(
-                    self._certs.c.crtsh_id == crtsh_id
-                ))
-            ])
-        ).scalar()
+                self._certs.c.crtsh_id
+            ]).where(
+                self._certs.c.crtsh_id.in_(crtsh_ids)
+            )
+        ).fetchall()
+        return {r for r, in rows}
 
     def _cert_from_row(self, row):
         return CertificateTrackingDetails(
@@ -253,23 +254,32 @@ class WSGIApplication(object):
             revoked_certs=revoked_certs
         )
 
+    def _add_crtsh_ids(self, crtsh_ids):
+        crtsh_ids = list(set(crtsh_ids) - self.cert_db.already_tracked(crtsh_ids))
+
+        if not crtsh_ids:
+            return
+
+        raw_certs = self.crtsh_checker.fetch_details(crtsh_ids)
+        revocation_dates = self.crtsh_checker.check_revocations(crtsh_ids)
+
+        certs = [
+            CertificateTrackingDetails(
+                raw_cert,
+                datetime.datetime.utcnow(),
+                revocation_dates.get(raw_cert.crtsh_id),
+            )
+            for raw_cert in raw_certs
+        ]
+        self.cert_db.add_certificates(certs)
+
     def add_certificate(self, request):
         try:
             crtsh_id = int(request.form["crtsh-id"])
         except ValueError:
             return redirect("/")
 
-        if self.cert_db.already_tracked(crtsh_id):
-            return redirect("/")
-        [raw_cert] = self.crtsh_checker.fetch_details([crtsh_id])
-        revocation_dates = self.crtsh_checker.check_revocations([crtsh_id])
-
-        cert = CertificateTrackingDetails(
-            raw_cert,
-            datetime.datetime.utcnow(),
-            revocation_dates.get(crtsh_id),
-        )
-        self.cert_db.add_certificates([cert])
+        self._add_crtsh_ids([crtsh_id])
         return redirect("/")
 
 
