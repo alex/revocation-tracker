@@ -274,6 +274,7 @@ def check_for_revocation(cert_db, crtsh_checker):
         revocation_date = revocations.get(cert.certificate.crtsh_id)
         if revocation_date is not None:
             cert_db.mark_revoked(cert, revocation_date)
+    print("[done checking]")
 
 
 def _chain_stop_result(service, stop):
