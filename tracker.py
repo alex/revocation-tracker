@@ -1,5 +1,6 @@
 import datetime
 import json
+import re
 
 import attr
 
@@ -274,12 +275,13 @@ class WSGIApplication(object):
         self.cert_db.add_certificates(certs)
 
     def add_certificate(self, request):
-        try:
-            crtsh_id = int(request.form["crtsh-id"])
-        except ValueError:
-            return redirect("/")
+        crtsh_ids = [
+            int(i)
+            for i in re.split(r"[,\s]", request.form["crtsh-ids"])
+            if i.isdigit()
+        ]
 
-        self._add_crtsh_ids([crtsh_id])
+        self._add_crtsh_ids(crtsh_ids)
         return redirect("/")
 
 
