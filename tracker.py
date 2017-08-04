@@ -142,41 +142,44 @@ class CrtshChecker(object):
             "postgresql://guest@crt.sh:5432/certwatch"
         )
 
-    def fetch_details(self, crtsh_id):
-        [cert_data] = self._engine.execute(
-            "SELECT certificate FROM certificate WHERE id = %s",
-            [crtsh_id]
-        ).fetchone()
+    def fetch_details(self, crtsh_ids):
+        rows = self._engine.execute(
+            "SELECT id, certificate FROM certificate WHERE id IN %s",
+            [(tuple(crtsh_ids),)],
+        ).fetchall()
 
-        cert = x509.load_der_x509_certificate(
-            bytes(cert_data), default_backend()
-        )
-
-        subject_cn = cert.subject.get_attributes_for_oid(
-            x509.NameOID.COMMON_NAME
-        )
-        issuer_cn = cert.issuer.get_attributes_for_oid(
-            x509.NameOID.COMMON_NAME
-        )
-        try:
-            san = cert.extensions.get_extension_for_class(
-                x509.SubjectAlternativeName
+        details = []
+        for row in rows:
+            cert = x509.load_der_x509_certificate(
+                bytes(row[1]), default_backend()
             )
-        except x509.ExtensionNotFound:
-            san_domains = None
-        else:
-            san_domains = [
-                n.bytes_value.decode("utf8", "replace")
-                for n in san.value if isinstance(n, x509.DNSName)
-            ]
 
-        return RawCertificateDetails(
-            crtsh_id,
-            ", ".join(a.value for a in subject_cn) if subject_cn else None,
-            san_domains,
-            ", ".join(a.value for a in issuer_cn) if issuer_cn else None,
-            cert.not_valid_after,
-        )
+            subject_cn = cert.subject.get_attributes_for_oid(
+                x509.NameOID.COMMON_NAME
+            )
+            issuer_cn = cert.issuer.get_attributes_for_oid(
+                x509.NameOID.COMMON_NAME
+            )
+            try:
+                san = cert.extensions.get_extension_for_class(
+                    x509.SubjectAlternativeName
+                )
+            except x509.ExtensionNotFound:
+                san_domains = None
+            else:
+                san_domains = [
+                    n.bytes_value.decode("utf8", "replace")
+                    for n in san.value if isinstance(n, x509.DNSName)
+                ]
+
+            details.append(RawCertificateDetails(
+                row[0],
+                ", ".join(a.value for a in subject_cn) if subject_cn else None,
+                san_domains,
+                ", ".join(a.value for a in issuer_cn) if issuer_cn else None,
+                cert.not_valid_after,
+            ))
+        return details
 
     def check_revocations(self, crtsh_ids):
         if not crtsh_ids:
@@ -255,7 +258,7 @@ class WSGIApplication(object):
 
         if self.cert_db.already_tracked(crtsh_id):
             return redirect("/")
-        raw_cert = self.crtsh_checker.fetch_details(crtsh_id)
+        [raw_cert] = self.crtsh_checker.fetch_details([crtsh_id])
         revocation_dates = self.crtsh_checker.check_revocations([crtsh_id])
 
         cert = CertificateTrackingDetails(
