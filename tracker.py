@@ -72,6 +72,26 @@ class CertificateDatabase(object):
             ),
             sqlalchemy.Column("revoked_at", sqlalchemy.DateTime),
         )
+        self._batches = sqlalchemy.Table(
+            "batches", self._metadata,
+            sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+            sqlalchemy.Column(
+                "description", sqlalchemy.Unicode, nullable=False
+            )
+        )
+        self._batch_entries = sqlalchemy.Table(
+            "batch_entries", self._metadata,
+            sqlalchemy.Column(
+                "crtsh_id",
+                sqlalchemy.Integer,
+                sqlalchemy.ForeignKey("certificates.crtsh_id")
+            ),
+            sqlalchemy.Column(
+                "batch_id",
+                sqlalchemy.Integer,
+                sqlalchemy.ForeignKey("batches.id")
+            ),
+        )
         self._engine = sqlalchemy.create_engine(db_uri)
 
     def add_certificates(self, certs):
@@ -112,9 +132,12 @@ class CertificateDatabase(object):
         )
 
     def get_all_certificates(self):
+        return self._get_certificates(self._certs.select())
+
+    def _get_certificates(self, query):
         certs = [
             self._cert_from_row(row) for row in
-            self._engine.execute(self._certs.select())
+            self._engine.execute(query)
         ]
 
         valid = []
@@ -139,6 +162,32 @@ class CertificateDatabase(object):
                 revoked_at=revocation_date
             )
         )
+
+    def create_batch(self, description, crtsh_ids):
+        result = self._engine.execute(self._batches.insert().values(
+            description=description,
+        ))
+        [batch_id] = result.inserted_primary_key
+        self._engine.execute(self._batch_entries.insert().values([
+            {
+                "crtsh_id": c,
+                "batch_id": batch_id
+            }
+            for c in crtsh_ids
+        ]))
+        return batch_id
+
+    def get_description_for_batch(self, batch_id):
+        return self._engine.execute(sqlalchemy.sql.select([
+            self._batches.c.description
+        ]).where(self._batches.c.id == batch_id)).scalar()
+
+    def get_certificates_for_batch(self, batch_id):
+        subquery = sqlalchemy.sql.select([
+            self._batch_entries.c.crtsh_id
+        ]).where(self._batch_entries.c.batch_id == batch_id)
+        query = self._certs.select().where(self._certs.c.crtsh_id.in_(subquery))
+        return self._get_certificates(query)
 
 
 class CrtshChecker(object):
@@ -225,6 +274,16 @@ class WSGIApplication(object):
                 methods=["POST"],
                 endpoint=self.add_certificate
             ),
+            routing.Rule(
+                "/create-batch/",
+                methods=["GET", "POST"],
+                endpoint=self.create_batch,
+            ),
+            routing.Rule(
+                "/batch/<batch_id>/",
+                methods=["GET"],
+                endpoint=self.batch,
+            ),
         ])
 
     def __call__(self, environ, start_response):
@@ -276,15 +335,36 @@ class WSGIApplication(object):
         self.cert_db.add_certificates(certs)
         return list(existing | set(c.certificate.crtsh_id for c in certs))
 
+    def _parse_ids(self, data):
+        return [int(i) for i in re.split(r"[,\s]", data) if i.isdigit()]
+
     def add_certificate(self, request):
-        crtsh_ids = [
-            int(i)
-            for i in re.split(r"[,\s]", request.form["crtsh-ids"])
-            if i.isdigit()
-        ]
+        crtsh_ids = self._parse_ids(request.form["crtsh-ids"])
 
         self._add_crtsh_ids(crtsh_ids)
         return redirect("/")
+
+    def create_batch(self, request):
+        if request.method == "POST":
+            description = request.form["description"]
+            crtsh_ids = self._parse_ids(request.form["crtsh-ids"])
+            crtsh_ids = self._add_crtsh_ids(crtsh_ids)
+            batch_id = self.cert_db.create_batch(description, crtsh_ids)
+            return redirect("/batch/{:d}/".format(batch_id))
+        return self.render_template("create-batch.html")
+
+    def batch(self, request, batch_id):
+        batch_description = self.cert_db.get_description_for_batch(batch_id)
+        (valid_certs, expired_certs, revoked_certs) = (
+            self.cert_db.get_certificates_for_batch(batch_id)
+        )
+        return self.render_template(
+            "batch.html",
+            batch_description=batch_description,
+            valid_certs=valid_certs,
+            expired_certs=expired_certs,
+            revoked_certs=revoked_certs
+        )
 
 
 def check_for_revocation(cert_db, crtsh_checker):
