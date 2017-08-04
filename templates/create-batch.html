@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <div class="jumbotron">
+        <p class="lead">
+            Create a batch to track
+        </p>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <form action="/create-batch/" method="post">
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <input type="text" name="description" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="crtsh-ids">crt.sh ids:</label>
+                        <textarea name="crtsh-ids" class="form-control" rows="5" placeholder="comma, space, or newline separated"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
