@@ -47,6 +47,12 @@ class CertificateTrackingDetails(object):
     revoked_at = attr.ib()
 
 
+@attr.s
+class Batch(object):
+    id = attr.ib()
+    description = attr.ib()
+
+
 class CertificateDatabase(object):
     def __init__(self, db_uri):
         self._metadata = sqlalchemy.MetaData()
@@ -177,6 +183,16 @@ class CertificateDatabase(object):
         ]))
         return batch_id
 
+    def get_all_batches(self):
+        rows = self._engine.execute(self._batches.select()).fetchall()
+        return [
+            Batch(
+                id=row[self._batches.c.id],
+                description=row[self._batches.c.description],
+            )
+            for row in rows
+        ]
+
     def get_description_for_batch(self, batch_id):
         return self._engine.execute(sqlalchemy.sql.select([
             self._batches.c.description
@@ -284,6 +300,11 @@ class WSGIApplication(object):
                 endpoint=self.create_batch,
             ),
             routing.Rule(
+                "/batches/",
+                methods=["GET"],
+                endpoint=self.list_batches,
+            ),
+            routing.Rule(
                 "/batch/<batch_id>/",
                 methods=["GET"],
                 endpoint=self.batch,
@@ -361,6 +382,10 @@ class WSGIApplication(object):
             batch_id = self.cert_db.create_batch(description, crtsh_ids)
             return redirect("/batch/{:d}/".format(batch_id))
         return self.render_template("create-batch.html")
+
+    def list_batches(self, request):
+        batches = self.cert_db.get_all_batches()
+        return self.render_template("batches.html", batches=batches)
 
     def batch(self, request, batch_id):
         batch_description = self.cert_db.get_description_for_batch(batch_id)

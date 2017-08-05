@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <div class="jumbotron">
+        <p class="lead">
+            Here are some batches people have created:
+        </p>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <ul>
+                    {% for batch in batches %}
+                        <li>
+                            <a href="/batch/{{ batch.id }}/">
+                                {{ batch.description }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
