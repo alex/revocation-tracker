@@ -46,8 +46,10 @@
                                         {{ display_name(n) }}
                                         {% if not loop.last %},{% endif %}
                                     {% endfor %}
+                                {% elif cert.certificate.san_dns_names is none() %}
+                                    <em>No SAN present</em>
                                 {% else %}
-                                    <code>{{ cert.certificate.san_dns_names }}</code>
+                                    <em>SAN present, but no dNSName entries</em>
                                 {% endif %}
                             </td>
                             <td><time class="timeago" datetime="{{ cert.added_at }}Z"></time></td>
