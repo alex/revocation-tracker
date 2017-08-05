@@ -12,7 +12,7 @@
 {% endmacro %}
 
 {% for label, certs in [("Still Valid", valid_certs), ("Expired", expired_certs), ("Revoked", revoked_certs)] %}
-    <h3>{{ label }} ({{ certs|length }})</h3>
+    <h3>{{ label }} <span class="badge">{{ certs|length }}</span></h3>
     {% if certs %}
         <table class="table table-striped">
             <thead>
@@ -25,7 +25,10 @@
             <tbody>
                 {% for group in certs|sort(attribute="certificate.issuer_common_name")|groupby("certificate.issuer_common_name") %}
                     <tr>
-                        <td colspan="6"><strong>{{ group.grouper }}</strong></td>
+                        <td colspan="6">
+                            <strong>{{ group.grouper }}</strong>
+                            <span class="badge">{{ group.list|length }}</span>
+                        </td>
                     </tr>
                     {% for cert in group.list|sort(attribute="certificate.expiration_date") %}
                         <tr>
