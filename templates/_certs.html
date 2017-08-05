@@ -1,3 +1,16 @@
+{% macro display_name(n) %}
+    <code>{{ n }}</code>
+    {% if n.startswith(" ") or n.endswith(" ") %}
+        <span
+            data-toggle="tooltip"
+            data-placement="top"
+            title="Contains {% if n.startswith(' ') and n.endswith(' ') %}leading and trailing{% elif n.startswith(' ') %}leading{% else %}trailing{% endif %} spaces"
+            class="glyphicon glyphicon-question-sign"
+            aria-hidden="true">
+        </span>
+    {% endif %}
+{% endmacro %}
+
 {% for label, certs in [("Still Valid", valid_certs), ("Expired", expired_certs), ("Revoked", revoked_certs)] %}
     <h3>{{ label }} ({{ certs|length }})</h3>
     {% if certs %}
@@ -22,18 +35,12 @@
                                 </a>
                             </td>
                             <td>
-                                <code>{{ cert.certificate.common_name }}</code>
-                                {% if cert.certificate.common_name.endswith(" ") %}
-                                    <span data-toggle="tooltip" data-placement="top" title="Contains trailing spaces" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-                                {% endif %}
+                                {{ display_name(cert.certificate.common_name) }}
                             </td>
                             <td>
                                 {% if cert.certificate.san_dns_names %}
                                     {% for n in cert.certificate.san_dns_names %}
-                                        <code>{{ n }}</code>
-                                        {% if n.endswith(" ") %}
-                                            <span data-toggle="tooltip" data-placement="top" title="Contains trailing spaces" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-                                        {% endif %}
+                                        {{ display_name(n) }}
                                         {% if not loop.last %},{% endif %}
                                     {% endfor %}
                                 {% else %}
