@@ -1,5 +1,5 @@
 {% macro display_name(n) %}
-    <code>{{ n }}</code>
+    <code style="white-space: pre;">{{ n }}</code>
     {% if n.startswith(" ") or n.endswith(" ") %}
         <span
             data-toggle="tooltip"
