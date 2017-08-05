@@ -21,11 +21,20 @@
                                     <code>{{ cert.certificate.crtsh_id }}</code>
                                 </a>
                             </td>
-                            <td><code>{{ cert.certificate.common_name }}</code></td>
+                            <td>
+                                <code>{{ cert.certificate.common_name }}</code>
+                                {% if cert.certificate.common_name.endswith(" ") %}
+                                    <span data-toggle="tooltip" data-placement="top" title="Contains trailing spaces" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                                {% endif %}
+                            </td>
                             <td>
                                 {% if cert.certificate.san_dns_names %}
                                     {% for n in cert.certificate.san_dns_names %}
-                                        <code>{{ n }}</code>{% if not loop.last %},{% endif %}
+                                        <code>{{ n }}</code>
+                                        {% if n.endswith(" ") %}
+                                            <span data-toggle="tooltip" data-placement="top" title="Contains trailing spaces" class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                                        {% endif %}
+                                        {% if not loop.last %},{% endif %}
                                     {% endfor %}
                                 {% else %}
                                     <code>{{ cert.certificate.san_dns_names }}</code>
