@@ -306,7 +306,7 @@ class WSGIApplication(object):
             endpoint, args = adapter.match()
             return endpoint(request, **args)
         except HTTPException as e:
-            return e
+            return e.get_response(request.environ)
 
     def render_template(self, template_name, **context):
         t = self.jinja_env.get_template(template_name)
