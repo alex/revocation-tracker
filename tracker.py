@@ -258,9 +258,11 @@ class CrtshChecker(object):
 
 
 class WSGIApplication(object):
-    def __init__(self, cert_db, crtsh_checker):
+    def __init__(self, cert_db, crtsh_checker, hsts):
         self.cert_db = cert_db
         self.crtsh_checker = crtsh_checker
+
+        self.hsts = hsts
 
         self.jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(
@@ -291,6 +293,11 @@ class WSGIApplication(object):
     def __call__(self, environ, start_response):
         request = Request(environ)
         response = self.handle_request(request)
+        if self.hsts:
+            response.headers.add(
+                "Strict-Transport-Security",
+                "max-age=31536000; includeSubDomains; preload"
+            )
         return response(environ, start_response)
 
     def handle_request(self, request):
@@ -419,10 +426,11 @@ def create_database(db_uri):
 @cli.command()
 @click.option("--port", type=click.INT, default=8080)
 @click.option("--db-uri")
-def run(port, db_uri):
+@click.option("--hsts/--no-hsts", default=False)
+def run(port, db_uri, hsts):
     cert_db = CertificateDatabase(db_uri)
     crtsh_checker = CrtshChecker()
-    app = WSGIApplication(cert_db, crtsh_checker)
+    app = WSGIApplication(cert_db, crtsh_checker, hsts)
 
     def build_service(reactor):
         multi = MultiService()
