@@ -327,6 +327,7 @@ class WSGIApplication(object):
         return response(environ, start_response)
 
     def handle_request(self, request):
+        print("is_secure: {}".format(request.is_secure))
         adapter = self.url_map.bind_to_environ(request)
         try:
             endpoint, args = adapter.match()
