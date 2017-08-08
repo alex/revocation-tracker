@@ -214,6 +214,11 @@ class CrtshChecker(object):
             "postgresql://guest@crt.sh:5432/certwatch"
         )
 
+    def get_replication_lag(self):
+        return self._engine.execute(
+            "SELECT now() - pg_last_xact_replay_timestamp()"
+        ).scalar()
+
     def fetch_details(self, crtsh_ids):
         rows = self._engine.execute(
             "SELECT id, certificate FROM certificate WHERE id IN %s",
@@ -331,6 +336,9 @@ class WSGIApplication(object):
 
     def render_template(self, template_name, **context):
         t = self.jinja_env.get_template(template_name)
+        context["crtsh_replication_lag"] = (
+            self.crtsh_checker.get_replication_lag()
+        )
         return Response(t.render(context), mimetype="text/html")
 
     def home(self, request):

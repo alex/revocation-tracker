@@ -31,6 +31,14 @@
             </div>
         </nav>
         <div class="container">
+            {% if crtsh_replication_lag.total_seconds() >= 60 * 60 * 2 %}
+                <div class="alert alert-warning" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    The <a href="https://crt.sh">crt.sh</a> we rely on is
+                    currently behind. Revocation information may be out of
+                    date.
+                </div>
+            {% endif %}
             {% block body %}{% endblock %}
         </div>
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
