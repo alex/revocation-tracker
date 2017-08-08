@@ -211,7 +211,8 @@ class CertificateDatabase(object):
 class CrtshChecker(object):
     def __init__(self):
         self._engine = sqlalchemy.create_engine(
-            "postgresql://guest@crt.sh:5432/certwatch"
+            "postgresql://guest@crt.sh:5432/certwatch",
+            isolation_level="AUTOCOMMIT",
         )
 
     def fetch_details(self, crtsh_ids):
