@@ -30,6 +30,8 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.utils import redirect
 from werkzeug.wrappers import Response, Request
 
+import wsgi_sslify
+
 
 @attr.s
 class RawCertificateDetails(object):
@@ -279,11 +281,9 @@ class CrtshChecker(object):
 
 
 class WSGIApplication(object):
-    def __init__(self, cert_db, crtsh_checker, hsts):
+    def __init__(self, cert_db, crtsh_checker):
         self.cert_db = cert_db
         self.crtsh_checker = crtsh_checker
-
-        self.hsts = hsts
 
         self.jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(
@@ -319,15 +319,9 @@ class WSGIApplication(object):
     def __call__(self, environ, start_response):
         request = Request(environ)
         response = self.handle_request(request)
-        if self.hsts:
-            response.headers.add(
-                "Strict-Transport-Security",
-                "max-age=31536000; includeSubDomains; preload"
-            )
         return response(environ, start_response)
 
     def handle_request(self, request):
-        print("is_secure: {}".format(request.is_secure))
         adapter = self.url_map.bind_to_environ(request)
         try:
             endpoint, args = adapter.match()
@@ -464,7 +458,9 @@ def create_database(db_uri):
 def run(port, db_uri, hsts):
     cert_db = CertificateDatabase(db_uri)
     crtsh_checker = CrtshChecker()
-    app = WSGIApplication(cert_db, crtsh_checker, hsts)
+    app = WSGIApplication(cert_db, crtsh_checker)
+    if hsts:
+        app = wsgi_sslify.sslify(app, subdomains=True)
 
     def build_service(reactor):
         multi = MultiService()

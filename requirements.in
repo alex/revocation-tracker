@@ -9,3 +9,4 @@ attrs
 lxml
 cssselect
 sqlalchemy
+wsgi_sslify
