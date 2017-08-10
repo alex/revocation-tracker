@@ -381,6 +381,9 @@ class WSGIApplication(object):
         if request.method == "POST":
             description = request.form["description"]
             crtsh_ids = self._parse_ids(request.form["crtsh-ids"])
+            if not crtsh_ids:
+                return redirect("/")
+
             crtsh_ids = self._add_crtsh_ids(crtsh_ids)
             batch_id = self.cert_db.create_batch(description, crtsh_ids)
             return redirect("/batch/{:d}/".format(batch_id))
