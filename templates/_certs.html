@@ -46,7 +46,7 @@
                             {% for group in certs|groupby("certificate.issuer_common_name") %}
                                 <tr>
                                     <td colspan="6">
-                                        <strong>{{ group.grouper }}</strong>
+                                        <strong>{{ group.grouper|default("None", true) }}</strong>
                                         <span class="badge">{{ group.list|length }}</span>
                                     </td>
                                 </tr>
