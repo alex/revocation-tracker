@@ -132,7 +132,10 @@ class CertificateDatabase(object):
                 crtsh_id=row[self._certs.c.crtsh_id],
                 common_name=row[self._certs.c.common_name],
                 san_dns_names=json.loads(row[self._certs.c.san_dns_names]),
-                issuer_common_name=row[self._certs.c.issuer_common_name],
+                # TODO: the `or ""` is a hack because the templates try to sort
+                # by issuer_common_name, and on Python3 str is not comparable
+                # with NoneType.
+                issuer_common_name=row[self._certs.c.issuer_common_name] or "",
                 expiration_date=row[self._certs.c.expiration_date],
             ),
             added_at=row[self._certs.c.added_at],
