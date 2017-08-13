@@ -43,7 +43,7 @@
                             <th>Expires on</th>
                         </thead>
                         <tbody>
-                            {% for group in certs|sort(attribute="certificate.issuer_common_name")|groupby("certificate.issuer_common_name") %}
+                            {% for group in certs|groupby("certificate.issuer_common_name") %}
                                 <tr>
                                     <td colspan="6">
                                         <strong>{{ group.grouper }}</strong>
