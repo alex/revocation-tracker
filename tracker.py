@@ -23,6 +23,7 @@ from twisted.internet.defer import Deferred, maybeDeferred
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet.task import react
 from twisted.internet.threads import deferToThread
+from twisted.logger import Logger
 from twisted.web import server, wsgi
 
 from werkzeug import routing
@@ -493,10 +494,13 @@ def run(port, db_uri, hsts):
             )
         ).setServiceParent(multi)
 
+        logger = Logger()
         TimerService(
             # Run every 10 minutes
             10 * 60,
-            lambda: deferToThread(check_for_revocation, cert_db, crtsh_checker)
+            lambda: deferToThread(
+                check_for_revocation, cert_db, crtsh_checker
+            ).addErrback(lambda f: logger.failure("Error checking for revocation", f))
         ).setServiceParent(multi)
         return multi
 
