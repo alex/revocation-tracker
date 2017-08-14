@@ -116,6 +116,14 @@ class CertificateDatabase(object):
             for cert in certs
         ]))
 
+    def remove_certificate(self, crtsh_id):
+        self._engine.execute(self._batch_entries.delete().where(
+            self._batch_entries.c.crtsh_id == crtsh_id
+        ))
+        self._engine.execute(self._certs.delete().where(
+            self._certs.c.crtsh_id == crtsh_id
+        ))
+
     def already_tracked(self, crtsh_ids):
         rows = self._engine.execute(
             sqlalchemy.sql.select([
@@ -455,6 +463,14 @@ def cli():
 def create_database(db_uri):
     cert_db = CertificateDatabase(db_uri)
     cert_db._metadata.create_all(cert_db._engine)
+
+
+@cli.command("remove-certificate")
+@click.option("--db-uri")
+@click.argument("crtsh-id", type=click.INT)
+def remove_certificate(db_uri, crtsh_id):
+    cert_db = CertificateDatabase(db_uri)
+    cert_db.remove_certificate(crtsh_id)
 
 
 @cli.command()
