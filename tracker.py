@@ -500,7 +500,9 @@ def run(port, db_uri, hsts):
             10 * 60,
             lambda: deferToThread(
                 check_for_revocation, cert_db, crtsh_checker
-            ).addErrback(lambda f: logger.failure("Error checking for revocation", f))
+            ).addErrback(
+                lambda f: logger.failure("Error checking for revocation", f)
+            )
         ).setServiceParent(multi)
         return multi
 
