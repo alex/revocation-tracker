@@ -88,6 +88,7 @@ class CertificateDatabase(object):
                 "added_at", sqlalchemy.DateTime, nullable=False
             ),
             sqlalchemy.Column("revoked_at", sqlalchemy.DateTime),
+            # TODO: add `nullable=False` once I've fixed prod
             sqlalchemy.Column("ccadb_owners", sqlalchemy.Unicode),
         )
         self._batches = sqlalchemy.Table(
@@ -152,6 +153,7 @@ class CertificateDatabase(object):
                 common_name=row[self._certs.c.common_name],
                 san_dns_names=json.loads(row[self._certs.c.san_dns_names]),
                 issuer_common_name=row[self._certs.c.issuer_common_name],
+                # TODO: remove the `or` once I've fixed prod
                 ccadb_owners=json.loads(row[self._certs.c.ccadb_owners] or "[]"),
                 expiration_date=row[self._certs.c.expiration_date],
             ),
