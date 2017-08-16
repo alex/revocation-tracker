@@ -39,8 +39,16 @@ class RawCertificateDetails(object):
     crtsh_id = attr.ib()
     common_name = attr.ib()
     san_dns_names = attr.ib()
+    ccadb_owners = attr.ib()
     issuer_common_name = attr.ib()
     expiration_date = attr.ib()
+
+    @property
+    def owner_display(self):
+        display = u"{}".format(self.issuer_common_name)
+        if self.ccadb_owners:
+            display += u" -- {}".format(u" / ".join(self.ccadb_owners))
+        return display
 
 
 @attr.s
@@ -80,6 +88,7 @@ class CertificateDatabase(object):
                 "added_at", sqlalchemy.DateTime, nullable=False
             ),
             sqlalchemy.Column("revoked_at", sqlalchemy.DateTime),
+            sqlalchemy.Column("ccadb_owners", sqlalchemy.Unicode),
         )
         self._batches = sqlalchemy.Table(
             "batches", self._metadata,
@@ -110,6 +119,7 @@ class CertificateDatabase(object):
                 "common_name": cert.certificate.common_name,
                 "san_dns_names": json.dumps(cert.certificate.san_dns_names),
                 "issuer_common_name": cert.certificate.issuer_common_name,
+                "ccadb_owners": json.dumps(cert.certificate.ccadb_owners),
                 "expiration_date": cert.certificate.expiration_date,
                 "added_at": cert.added_at,
                 "revoked_at": cert.revoked_at,
@@ -141,10 +151,8 @@ class CertificateDatabase(object):
                 crtsh_id=row[self._certs.c.crtsh_id],
                 common_name=row[self._certs.c.common_name],
                 san_dns_names=json.loads(row[self._certs.c.san_dns_names]),
-                # TODO: the `or ""` is a hack because the templates try to sort
-                # by issuer_common_name, and on Python3 str is not comparable
-                # with NoneType.
-                issuer_common_name=row[self._certs.c.issuer_common_name] or "",
+                issuer_common_name=row[self._certs.c.issuer_common_name],
+                ccadb_owners=json.loads(row[self._certs.c.ccadb_owners]),
                 expiration_date=row[self._certs.c.expiration_date],
             ),
             added_at=row[self._certs.c.added_at],
@@ -234,10 +242,15 @@ class CrtshChecker(object):
         ).scalar()
 
     def fetch_details(self, crtsh_ids):
-        rows = self._engine.execute(
-            "SELECT id, certificate FROM certificate WHERE id IN %s",
-            [(tuple(crtsh_ids),)],
-        ).fetchall()
+        rows = self._engine.execute("""
+        SELECT
+            c.id, c.certificate, array_agg(DISTINCT cc.ca_owner)
+        FROM certificate c
+        INNER JOIN ca_certificate cac ON c.issuer_ca_id = cac.ca_id
+        INNER JOIN ccadb_certificate cc ON cac.certificate_id = cc.certificate_id
+        WHERE c.id IN %s
+        GROUP BY c.id, c.certificate
+        """, [(tuple(crtsh_ids),)]).fetchall()
 
         details = []
         for row in rows:
@@ -264,11 +277,12 @@ class CrtshChecker(object):
                 ]
 
             details.append(RawCertificateDetails(
-                row[0],
-                ", ".join(a.value for a in subject_cn) if subject_cn else None,
-                san_domains,
-                ", ".join(a.value for a in issuer_cn) if issuer_cn else None,
-                cert.not_valid_after,
+                crtsh_id=row[0],
+                common_name=", ".join(a.value for a in subject_cn) if subject_cn else None,
+                san_dns_names=san_domains,
+                ccadb_owners=[o for o in row[2] if o is not None],
+                issuer_common_name=", ".join(a.value for a in issuer_cn) if issuer_cn else None,
+                expiration_date=cert.not_valid_after,
             ))
         return details
 

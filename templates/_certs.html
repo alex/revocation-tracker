@@ -43,10 +43,10 @@
                             <th>Expires on</th>
                         </thead>
                         <tbody>
-                            {% for group in certs|groupby("certificate.issuer_common_name") %}
+                            {% for group in certs|groupby("certificate.owner_display") %}
                                 <tr>
                                     <td colspan="6">
-                                        <strong>{{ group.grouper|default("None", true) }}</strong>
+                                        <strong>{{ group.grouper }}</strong>
                                         <span class="badge">{{ group.list|length }}</span>
                                     </td>
                                 </tr>
