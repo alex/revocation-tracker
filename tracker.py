@@ -152,7 +152,7 @@ class CertificateDatabase(object):
                 common_name=row[self._certs.c.common_name],
                 san_dns_names=json.loads(row[self._certs.c.san_dns_names]),
                 issuer_common_name=row[self._certs.c.issuer_common_name],
-                ccadb_owners=json.loads(row[self._certs.c.ccadb_owners]),
+                ccadb_owners=json.loads(row[self._certs.c.ccadb_owners] or "[]"),
                 expiration_date=row[self._certs.c.expiration_date],
             ),
             added_at=row[self._certs.c.added_at],
