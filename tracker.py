@@ -89,7 +89,9 @@ class CertificateDatabase(object):
                 "added_at", sqlalchemy.DateTime, nullable=False
             ),
             sqlalchemy.Column("revoked_at", sqlalchemy.DateTime),
-            sqlalchemy.Column("ccadb_owners", sqlalchemy.Unicode, nullable=False),
+            sqlalchemy.Column(
+                "ccadb_owners", sqlalchemy.Unicode, nullable=False
+            ),
         )
         self._batches = sqlalchemy.Table(
             "batches", self._metadata,
@@ -214,7 +216,7 @@ class CertificateDatabase(object):
                     self._batches.c.id == self._batch_entries.c.batch_id,
                     self._batch_entries.c.crtsh_id == self._certs.c.crtsh_id,
                     self._certs.c.expiration_date > datetime.datetime.utcnow(),
-                    self._certs.c.revoked_at == None,
+                    self._certs.c.revoked_at.is_(None),
                 ))
             ))
         ])
@@ -262,8 +264,10 @@ class CrtshChecker(object):
         SELECT
             c.id, c.certificate, array_agg(DISTINCT cc.ca_owner)
         FROM certificate c
-        INNER JOIN ca_certificate cac ON c.issuer_ca_id = cac.ca_id
-        INNER JOIN ccadb_certificate cc ON cac.certificate_id = cc.certificate_id
+        INNER JOIN
+            ca_certificate cac ON c.issuer_ca_id = cac.ca_id
+        INNER JOIN
+            ccadb_certificate cc ON cac.certificate_id = cc.certificate_id
         WHERE c.id IN %s
         GROUP BY c.id, c.certificate
         """, [(tuple(crtsh_ids),)]).fetchall()
