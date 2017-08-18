@@ -237,9 +237,12 @@ class CrtshChecker(object):
         )
 
     def get_replication_lag(self):
-        return self._engine.execute(
-            "SELECT now() - pg_last_xact_replay_timestamp()"
-        ).scalar()
+        try:
+            return self._engine.execute(
+                "SELECT now() - pg_last_xact_replay_timestamp()"
+            ).scalar()
+        except sqlalchemy.exc.OperationalError:
+            return None
 
     def fetch_details(self, crtsh_ids):
         rows = self._engine.execute("""
