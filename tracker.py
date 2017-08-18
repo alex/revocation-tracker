@@ -62,6 +62,7 @@ class CertificateTrackingDetails(object):
 class Batch(object):
     id = attr.ib()
     description = attr.ib()
+    completed = attr.ib()
 
 
 class CertificateDatabase(object):
@@ -206,13 +207,25 @@ class CertificateDatabase(object):
         return batch_id
 
     def get_all_batches(self):
-        rows = self._engine.execute(self._batches.select()).fetchall()
+        query = sqlalchemy.select([
+            self._batches,
+            sqlalchemy.not_(sqlalchemy.exists(
+                sqlalchemy.select([1]).where(sqlalchemy.and_(
+                    self._batches.c.id == self._batch_entries.c.batch_id,
+                    self._batch_entries.c.crtsh_id == self._certs.c.crtsh_id,
+                    self._certs.c.expiration_date > datetime.datetime.utcnow(),
+                    self._certs.c.revoked_at == None,
+                ))
+            ))
+        ])
+        rows = self._engine.execute(query)
         return [
             Batch(
-                id=row[self._batches.c.id],
-                description=row[self._batches.c.description],
+                id=id,
+                description=description,
+                completed=completed,
             )
-            for row in rows
+            for id, description, completed in rows
         ]
 
     def get_description_for_batch(self, batch_id):
@@ -420,7 +433,18 @@ class WSGIApplication(object):
 
     def list_batches(self, request):
         batches = self.cert_db.get_all_batches()
-        return self.render_template("batches.html", batches=batches)
+        current_batches = []
+        completed_batches = []
+        for batch in batches:
+            if batch.completed:
+                completed_batches.append(batch)
+            else:
+                current_batches.append(batch)
+        return self.render_template(
+            "batches.html",
+            current_batches=current_batches,
+            completed_batches=completed_batches
+        )
 
     def batch(self, request, batch_id):
         batch_description = self.cert_db.get_description_for_batch(batch_id)

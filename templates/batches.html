@@ -2,22 +2,26 @@
 
 {% block body %}
     <div class="jumbotron">
-        <p class="lead">
-            Here are some batches people have created:
-        </p>
-        <div class="panel panel-default">
-            <div class="panel-body">
-                <ul>
-                    {% for batch in batches %}
-                        <li>
-                            <a href="/batch/{{ batch.id }}/">
-                                {{ batch.description }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
+        {% for description, batches in [
+            ("Here are some batches people have created", current_batches),
+            ("Here are batches which have been completed", completed_batches)
+        ] %}
+            {% if batches %}
+                <p class="lead">{{ description }}</p>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <ul>
+                            {% for batch in batches %}
+                                <li>
+                                    <a href="/batch/{{ batch.id }}/">
+                                        {{ batch.description }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
     </div>
-
 {% endblock %}
