@@ -3,6 +3,11 @@
 {% block body %}
     <h3>CABLint recent error summary <small>since {{ since }}</small></h3>
 
+    <p>
+        Some of these may be false-positives. You should review closely before
+        taking action.
+    </p>
+
     <table class="table table-striped">
         <thead>
             <th># of affected certificates</th>
