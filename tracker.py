@@ -65,6 +65,16 @@ class Batch(object):
     completed = attr.ib()
 
 
+@attr.s
+class CABLintErrorSummary(object):
+    count = attr.ib()
+    ccadb_owners = attr.ib()
+    ca_id = attr.ib()
+    lint_id = attr.ib()
+    lint_severity = attr.ib()
+    lint_description = attr.ib()
+
+
 class CertificateDatabase(object):
     def __init__(self, db_uri):
         self._metadata = sqlalchemy.MetaData()
@@ -325,6 +335,63 @@ class CrtshChecker(object):
             revocation_dates[crtsh_id] = revocation_date
         return revocation_dates
 
+    def get_recent_cablint_summaries(self, since):
+        rows = self._engine.execute("""
+        WITH trusted_cas AS (
+            SELECT ca_id
+            FROM ca_trust_purpose
+            WHERE
+                trust_purpose_id = 1 AND -- Server authentication
+                trust_context_id = 5 AND -- Mozilla
+                is_time_valid AND
+                NOT all_chains_revoked_via_onecrl AND
+                NOT all_chains_revoked_in_salesforce
+        )
+        SELECT
+            COUNT(DISTINCT lci.certificate_id),
+            array_agg(DISTINCT cc.ca_owner),
+            c.issuer_ca_id,
+            li.id,
+            li.severity,
+            li.issue_text
+        FROM
+            lint_cert_issue lci
+        INNER JOIN
+            lint_issue li ON li.id = lci.lint_issue_id
+        INNER JOIN
+            certificate c ON c.id = lci.certificate_id
+        INNER JOIN
+            ca_certificate cac ON c.issuer_ca_id = cac.ca_id
+        INNER JOIN
+            ccadb_certificate cc ON cac.certificate_id = cc.certificate_id
+        WHERE
+            li.linter = 'cablint' AND
+            li.severity IN ('W', 'E', 'F') AND
+            lci.not_before >= %s AND
+            c.issuer_ca_id IN (SELECT ca_id FROM trusted_cas) AND
+            NOT EXISTS (
+                SELECT 1
+                FROM crl_revoked
+                WHERE
+                    ca_id = c.issuer_ca_id AND
+                    serial_number = x509_serialnumber(c.certificate)
+            )
+        GROUP BY
+            c.issuer_ca_id, li.id, li.severity, li.issue_text
+        ORDER BY COUNT(DISTINCT lci.certificate_id) DESC;
+        """, [since])
+        return [
+            CABLintErrorSummary(
+                count=row[0],
+                ccadb_owners=[o for o in row[1] if o is not None],
+                ca_id=row[2],
+                lint_id=row[3],
+                lint_severity=row[4],
+                lint_description=row[5]
+            )
+            for row in rows
+        ]
+
 
 class WSGIApplication(object):
     def __init__(self, cert_db, crtsh_checker):
@@ -360,6 +427,11 @@ class WSGIApplication(object):
                 methods=["GET"],
                 endpoint=self.batch,
             ),
+            routing.Rule(
+                "/cablint/",
+                methods=["GET"],
+                endpoint=self.cablint,
+            )
         ])
 
     def __call__(self, environ, start_response):
@@ -464,6 +536,17 @@ class WSGIApplication(object):
             valid_certs=valid_certs,
             expired_certs=expired_certs,
             revoked_certs=revoked_certs
+        )
+
+    def cablint(self, request):
+        since = datetime.date.today() - datetime.timedelta(days=3)
+        cablint_summaries = self.crtsh_checker.get_recent_cablint_summaries(
+            since
+        )
+        return self.render_template(
+            "cablint.html",
+            cablint_summaries=cablint_summaries,
+            since=since,
         )
 
 

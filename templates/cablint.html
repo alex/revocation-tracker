@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <h3>CABLint recent error summary <small>since {{ since }}</small></h3>
+
+    <table class="table table-striped">
+        <thead>
+            <th># of affected certificates</th>
+            <th>CCADB Owner</th>
+            <th>Severity</th>
+            <th>Description</th>
+        </thead>
+        <tbody>
+            {% for summary in cablint_summaries %}
+                <tr>
+                    <td>
+                        <a href="https://crt.sh/?cablint={{ summary.lint_id }}&iCAID={{ summary.ca_id }}&minNotBefore={{ since }}">
+                            {{ summary.count }}
+                        </a>
+                    </td>
+                    <td>{{ " / ".join(summary.ccadb_owners) }}</td>
+                    <td>{{ summary.lint_severity }}</td>
+                    <td>{{ summary.lint_description }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
