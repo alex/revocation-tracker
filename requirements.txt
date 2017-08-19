@@ -12,7 +12,7 @@ click==6.7
 constantly==15.1.0        # via twisted
 cssselect==1.0.1
 enum34==1.1.6
-hyperlink==17.3.0         # via twisted
+hyperlink==17.3.1         # via twisted
 idna==2.6
 incremental==17.5.0       # via twisted
 ipaddress==1.0.18
