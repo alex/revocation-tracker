@@ -560,6 +560,9 @@ def check_for_revocation(cert_db, crtsh_checker):
     for cert in certs:
         revocation_date = revocations.get(cert.certificate.crtsh_id)
         if revocation_date is not None:
+            print("[marking certificate as revoked; crtsh_id={}]".format(
+                cert.certificate.crtsh_id
+            ))
             cert_db.mark_revoked(cert, revocation_date)
     print("[done checking; revoked={}]".format(len(revocations)))
 
