@@ -551,15 +551,25 @@ class WSGIApplication(object):
         )
 
     def cablint(self, request):
-        since = datetime.date.today() - datetime.timedelta(days=1)
-        cablint_summaries = self.crtsh_checker.get_recent_cablint_summaries(
-            since
-        )
+        if hasattr(self, "_cablint_summaries"):
+            (since, cablint_summaries) = self._cablint_summaries
+        else:
+            since = datetime.date.today() - datetime.timedelta(days=1)
+            cablint_summaries = self.crtsh_checker.get_recent_cablint_summaries(
+                since
+            )
         return self.render_template(
             "cablint.html",
             cablint_summaries=cablint_summaries,
             since=since,
         )
+
+    def _update_cablint_summaries(self):
+        since = datetime.date.today() - datetime.timedelta(days=7)
+        cablint_summaries = self.crtsh_checker.get_recent_cablint_summaries(
+            since
+        )
+        self._cablint_summaries = (since, cablint_summaries)
 
 
 def check_for_revocation(cert_db, crtsh_checker):
@@ -624,7 +634,7 @@ def remove_certificate(db_uri, crtsh_id):
 def run(port, db_uri, hsts):
     cert_db = CertificateDatabase(db_uri)
     crtsh_checker = CrtshChecker()
-    app = WSGIApplication(cert_db, crtsh_checker)
+    app = raw_app = WSGIApplication(cert_db, crtsh_checker)
     if hsts:
         app = wsgi_sslify.sslify(app, subdomains=True)
 
@@ -645,6 +655,15 @@ def run(port, db_uri, hsts):
                 check_for_revocation, cert_db, crtsh_checker
             ).addErrback(
                 lambda f: logger.failure("Error checking for revocation", f)
+            )
+        ).setServiceParent(multi)
+
+        TimerService(
+            60 * 60,
+            lambda: deferToThread(
+                raw_app._update_cablint_summaries
+            ).addErrback(
+                lambda f: logger.failure("Error updating cablint summaries", f)
             )
         ).setServiceParent(multi)
         return multi
