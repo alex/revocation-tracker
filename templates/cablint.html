@@ -20,7 +20,7 @@
             {% for summary in cablint_summaries %}
                 <tr>
                     <td>
-                        <a href="https://crt.sh/?cablint={{ summary.lint_id }}&iCAID={{ summary.ca_id }}&minNotBefore={{ since }}">
+                        <a href="https://crt.sh/?cablint={{ summary.lint_id }}&iCAID={{ summary.ca_id }}&minNotBefore={{ summary.oldest_not_before.date() }}">
                             {{ summary.count }}
                         </a>
                     </td>

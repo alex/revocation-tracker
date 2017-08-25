@@ -70,6 +70,7 @@ class CABLintErrorSummary(object):
     count = attr.ib()
     ccadb_owners = attr.ib()
     ca_id = attr.ib()
+    oldest_not_before = attr.ib()
     lint_id = attr.ib()
     lint_severity = attr.ib()
     lint_description = attr.ib()
@@ -336,6 +337,14 @@ class CrtshChecker(object):
         return revocation_dates
 
     def get_recent_cablint_summaries(self, since):
+        min_id = self._engine.execute("""
+        SELECT
+            MAX(cte.certificate_id)
+        FROM
+            ct_log_entry cte
+        WHERE
+            cte.entry_timestamp < %s
+        """, [since]).scalar()
         rows = self._engine.execute("""
         WITH trusted_cas AS (
             SELECT ca_id
@@ -351,6 +360,7 @@ class CrtshChecker(object):
             COUNT(DISTINCT lci.certificate_id),
             array_agg(DISTINCT cc.ca_owner),
             c.issuer_ca_id,
+            MIN(lci.not_before),
             li.id,
             li.severity,
             li.issue_text
@@ -367,8 +377,9 @@ class CrtshChecker(object):
         WHERE
             li.linter = 'cablint' AND
             li.severity IN ('W', 'E', 'F') AND
-            lci.not_before >= %s AND
+            lci.certificate_id > %s AND
             c.issuer_ca_id IN (SELECT ca_id FROM trusted_cas) AND
+            x509_notafter(c.certificate) >= now() AND
             NOT EXISTS (
                 SELECT 1
                 FROM crl_revoked
@@ -379,15 +390,16 @@ class CrtshChecker(object):
         GROUP BY
             c.issuer_ca_id, li.id, li.severity, li.issue_text
         ORDER BY COUNT(DISTINCT lci.certificate_id) DESC;
-        """, [since])
+        """, [min_id])
         return [
             CABLintErrorSummary(
                 count=row[0],
                 ccadb_owners=[o for o in row[1] if o is not None],
                 ca_id=row[2],
-                lint_id=row[3],
-                lint_severity=row[4],
-                lint_description=row[5]
+                oldest_not_before=row[3],
+                lint_id=row[4],
+                lint_severity=row[5],
+                lint_description=row[6]
             )
             for row in rows
         ]
@@ -539,7 +551,7 @@ class WSGIApplication(object):
         )
 
     def cablint(self, request):
-        since = datetime.date.today() - datetime.timedelta(days=3)
+        since = datetime.date.today() - datetime.timedelta(days=1)
         cablint_summaries = self.crtsh_checker.get_recent_cablint_summaries(
             since
         )
