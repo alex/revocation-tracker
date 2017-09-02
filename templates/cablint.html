@@ -11,7 +11,7 @@
     <table class="table table-striped">
         <thead>
             <th># of affected certificates</th>
-            <th>CA ID</th>
+            <th>CA</th>
             <th>CCADB Owner</th>
             <th>Severity</th>
             <th>Description</th>
@@ -26,7 +26,7 @@
                     </td>
                     <td>
                         <a href="https://crt.sh/?caid={{ summary.ca_id }}&opt=cablint">
-                            {{ summary.ca_id }}
+                            {{ summary.ca_name }}
                         </a>
                     </td>
                     <td>{{ " / ".join(summary.ccadb_owners) }}</td>

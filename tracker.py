@@ -70,6 +70,7 @@ class CABLintErrorSummary(object):
     count = attr.ib()
     ccadb_owners = attr.ib()
     ca_id = attr.ib()
+    ca_name = attr.ib()
     oldest_not_before = attr.ib()
     lint_id = attr.ib()
     lint_severity = attr.ib()
@@ -360,6 +361,7 @@ class CrtshChecker(object):
             COUNT(DISTINCT lci.certificate_id),
             array_agg(DISTINCT cc.ca_owner),
             c.issuer_ca_id,
+            ca.name,
             MIN(lci.not_before),
             li.id,
             li.severity,
@@ -370,6 +372,8 @@ class CrtshChecker(object):
             lint_issue li ON li.id = lci.lint_issue_id
         INNER JOIN
             certificate c ON c.id = lci.certificate_id
+        INNER JOIN
+            ca ON ca.id = c.issuer_ca_id
         INNER JOIN
             ca_certificate cac ON c.issuer_ca_id = cac.ca_id
         INNER JOIN
@@ -388,7 +392,7 @@ class CrtshChecker(object):
                     serial_number = x509_serialnumber(c.certificate)
             )
         GROUP BY
-            c.issuer_ca_id, li.id, li.severity, li.issue_text
+            c.issuer_ca_id, ca.name, li.id, li.severity, li.issue_text
         ORDER BY COUNT(DISTINCT lci.certificate_id) DESC;
         """, [min_id])
         return [
@@ -396,10 +400,11 @@ class CrtshChecker(object):
                 count=row[0],
                 ccadb_owners=[o for o in row[1] if o is not None],
                 ca_id=row[2],
-                oldest_not_before=row[3],
-                lint_id=row[4],
-                lint_severity=row[5],
-                lint_description=row[6]
+                ca_name=row[3],
+                oldest_not_before=row[4],
+                lint_id=row[5],
+                lint_severity=row[6],
+                lint_description=row[7]
             )
             for row in rows
         ]
