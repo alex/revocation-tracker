@@ -66,7 +66,7 @@ class Batch(object):
 
 
 @attr.s
-class CABLintErrorSummary(object):
+class LintErrorSummary(object):
     count = attr.ib()
     ccadb_owners = attr.ib()
     ca_id = attr.ib()
@@ -337,7 +337,7 @@ class CrtshChecker(object):
             revocation_dates[crtsh_id] = revocation_date
         return revocation_dates
 
-    def get_recent_cablint_summaries(self, since):
+    def get_recent_lint_summaries(self, linter, since):
         min_id = self._engine.execute("""
         SELECT
             MAX(cte.certificate_id)
@@ -379,7 +379,7 @@ class CrtshChecker(object):
         INNER JOIN
             ccadb_certificate cc ON cac.certificate_id = cc.certificate_id
         WHERE
-            li.linter = 'cablint' AND
+            li.linter = %s AND
             li.severity IN ('W', 'E', 'F') AND
             lci.certificate_id > %s AND
             c.issuer_ca_id IN (SELECT ca_id FROM trusted_cas) AND
@@ -394,9 +394,9 @@ class CrtshChecker(object):
         GROUP BY
             c.issuer_ca_id, ca.name, li.id, li.severity, li.issue_text
         ORDER BY COUNT(DISTINCT lci.certificate_id) DESC;
-        """, [min_id])
+        """, [linter, min_id])
         return [
-            CABLintErrorSummary(
+            LintErrorSummary(
                 count=row[0],
                 ccadb_owners=[o for o in row[1] if o is not None],
                 ca_id=row[2],
@@ -448,7 +448,12 @@ class WSGIApplication(object):
                 "/cablint/",
                 methods=["GET"],
                 endpoint=self.cablint,
-            )
+            ),
+            routing.Rule(
+                "/zlint/",
+                methods=["GET"],
+                endpoint=self.zlint,
+            ),
         ])
 
     def __call__(self, environ, start_response):
@@ -560,21 +565,41 @@ class WSGIApplication(object):
             (since, cablint_summaries) = self._cablint_summaries
         else:
             since = datetime.date.today() - datetime.timedelta(days=1)
-            cablint_summaries = self.crtsh_checker.get_recent_cablint_summaries(
-                since
+            cablint_summaries = self.crtsh_checker.get_recent_lint_summaries(
+                "cablint", since
             )
         return self.render_template(
-            "cablint.html",
-            cablint_summaries=cablint_summaries,
+            "lint.html",
+            linter="CABlint",
+            lint_summaries=cablint_summaries,
             since=since,
         )
 
-    def _update_cablint_summaries(self):
+    def zlint(self, request):
+        if hasattr(self, "_zlint_summaries"):
+            (since, zlint_summaries) = self._zlint_summaries
+        else:
+            since = datetime.date.today() - datetime.timedelta(days=1)
+            zlint_summaries = self.crtsh_checker.get_recent_lint_summaries(
+                "zlint", since
+            )
+        return self.render_template(
+            "lint.html",
+            linter="ZLint",
+            lint_summaries=zlint_summaries,
+            since=since,
+        )
+
+    def _update_lint_summaries(self):
         since = datetime.date.today() - datetime.timedelta(days=7)
-        cablint_summaries = self.crtsh_checker.get_recent_cablint_summaries(
-            since
+        cablint_summaries = self.crtsh_checker.get_recent_lint_summaries(
+            "cablint", since
+        )
+        zlint_summaries = self.crtsh_checker.get_recent_lint_summaries(
+            "zlint", since
         )
         self._cablint_summaries = (since, cablint_summaries)
+        self._zlint_summaries = (since, zlint_summaries)
 
 
 def check_for_revocation(cert_db, crtsh_checker):
@@ -666,7 +691,7 @@ def run(port, db_uri, hsts):
         TimerService(
             60 * 60,
             lambda: deferToThread(
-                raw_app._update_cablint_summaries
+                raw_app._update_lint_summaries
             ).addErrback(
                 lambda f: logger.failure("Error updating cablint summaries", f)
             )

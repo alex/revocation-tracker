@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block body %}
-    <h3>CABLint recent error summary <small>since {{ since }}</small></h3>
+    <h3>{{ linter }} recent error summary <small>since {{ since }}</small></h3>
 
     <p>
         Some of these may be false-positives. You should review closely before
@@ -17,15 +17,15 @@
             <th>Description</th>
         </thead>
         <tbody>
-            {% for summary in cablint_summaries %}
+            {% for summary in lint_summaries %}
                 <tr>
                     <td>
-                        <a href="https://crt.sh/?cablint={{ summary.lint_id }}&iCAID={{ summary.ca_id }}&minNotBefore={{ summary.oldest_not_before.date() }}">
+                        <a href="https://crt.sh/?{{ linter.lower() }}={{ summary.lint_id }}&iCAID={{ summary.ca_id }}&minNotBefore={{ summary.oldest_not_before.date() }}">
                             {{ summary.count }}
                         </a>
                     </td>
                     <td>
-                        <a href="https://crt.sh/?caid={{ summary.ca_id }}&opt=cablint">
+                        <a href="https://crt.sh/?caid={{ summary.ca_id }}&opt={{ linter.lower() }}">
                             {{ summary.ca_name }}
                         </a>
                     </td>
