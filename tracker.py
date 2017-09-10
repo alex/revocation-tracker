@@ -351,8 +351,10 @@ class CrtshChecker(object):
             SELECT ca_id
             FROM ca_trust_purpose
             WHERE
-                trust_purpose_id = 1 AND -- Server authentication
-                trust_context_id = 5 AND -- Mozilla
+                -- Server authentication
+                trust_purpose_id = 1 AND
+                -- Mozilla
+                trust_context_id = 5 AND
                 is_time_valid AND
                 NOT all_chains_revoked_via_onecrl AND
                 NOT all_chains_revoked_in_salesforce
