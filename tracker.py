@@ -66,7 +66,7 @@ class Batch(object):
 
 
 @attr.s
-class LintErrorSummary(object):
+class LintSummary(object):
     count = attr.ib()
     ccadb_owners = attr.ib()
     ca_id = attr.ib()
@@ -398,7 +398,7 @@ class CrtshChecker(object):
         ORDER BY COUNT(DISTINCT lci.certificate_id) DESC;
         """, [linter, min_id])
         return [
-            LintErrorSummary(
+            LintSummary(
                 count=row[0],
                 ccadb_owners=[o for o in row[1] if o is not None],
                 ca_id=row[2],
