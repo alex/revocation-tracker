@@ -6,7 +6,5 @@ jinja2
 psycopg2
 -e git+https://github.com/pyca/cryptography#egg=cryptography
 attrs
-lxml
-cssselect
 sqlalchemy
 wsgi_sslify

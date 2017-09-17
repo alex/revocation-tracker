@@ -10,14 +10,12 @@ attrs==17.2.0
 automat==0.6.0            # via twisted
 click==6.7
 constantly==15.1.0        # via twisted
-cssselect==1.0.1
 enum34==1.1.6
 hyperlink==17.3.1         # via twisted
 idna==2.6
 incremental==17.5.0       # via twisted
 ipaddress==1.0.18
 jinja2==2.9.6
-lxml==3.8.0
 markupsafe==1.0           # via jinja2
 pathlib==1.0.1
 psycopg2==2.7.3.1
