@@ -17,7 +17,7 @@ idna==2.6
 incremental==17.5.0       # via twisted
 ipaddress==1.0.18
 jinja2==2.9.6
-lxml==3.8.0
+lxml==4.0.0
 markupsafe==1.0           # via jinja2
 pathlib==1.0.1
 psycopg2==2.7.3.1
