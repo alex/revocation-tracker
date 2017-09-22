@@ -24,4 +24,4 @@ sqlalchemy==1.1.14
 twisted==17.5.0
 werkzeug==0.12.2
 wsgi-sslify==1.0.1
-zope.interface==4.4.2     # via twisted
+zope.interface==4.4.3     # via twisted
