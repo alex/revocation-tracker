@@ -20,7 +20,7 @@
             {% for summary in lint_summaries %}
                 <tr>
                     <td>
-                        <a href="https://crt.sh/?{{ linter.lower() }}={{ summary.lint_id }}&iCAID={{ summary.ca_id }}&minNotBefore={{ summary.oldest_not_before.date() }}&exclude=expired">
+                        <a href="https://crt.sh/?{{ linter.lower() }}={{ summary.lint_id }}&iCAID={{ summary.ca_id }}&minNotBefore={{ summary.oldest_not_before }}&exclude=expired">
                             {{ summary.count }}
                         </a>
                     </td>
