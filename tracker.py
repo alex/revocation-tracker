@@ -364,7 +364,7 @@ class CrtshChecker(object):
             array_agg(DISTINCT cc.ca_owner),
             c.issuer_ca_id,
             ca.name,
-            MIN(lci.not_before),
+            MIN(lci.not_before_date),
             li.id,
             li.severity,
             li.issue_text
