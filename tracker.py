@@ -303,10 +303,7 @@ class CrtshChecker(object):
             except x509.ExtensionNotFound:
                 san_domains = None
             else:
-                san_domains = [
-                    n.bytes_value.decode("utf8", "replace")
-                    for n in san.value if isinstance(n, x509.DNSName)
-                ]
+                san_domains = san.value.get_values_for_type(x509.DNSName)
 
             details.append(RawCertificateDetails(
                 crtsh_id=row[0],
