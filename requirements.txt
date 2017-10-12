@@ -9,7 +9,7 @@ attrs==17.2.0
 automat==0.6.0            # via twisted
 click==6.7
 constantly==15.1.0        # via twisted
-cryptography==2.1
+cryptography==2.1.1
 enum34==1.1.6             # via cryptography
 hyperlink==17.3.1         # via twisted
 idna==2.6                 # via cryptography
