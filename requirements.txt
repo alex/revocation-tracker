@@ -15,7 +15,7 @@ hyperlink==17.3.1         # via twisted
 idna==2.6                 # via cryptography
 incremental==17.5.0       # via twisted
 ipaddress==1.0.18         # via cryptography
-jinja2==2.9.6
+jinja2==2.10
 markupsafe==1.0           # via jinja2
 pathlib==1.0.1
 psycopg2==2.7.3.2
