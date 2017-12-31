@@ -22,6 +22,6 @@ psycopg2==2.7.3.2
 six==1.11.0               # via automat, cryptography
 sqlalchemy==1.2.0
 twisted==17.9.0
-werkzeug==0.14
+werkzeug==0.14.1
 wsgi-sslify==1.0.1
 zope.interface==4.4.3     # via twisted
