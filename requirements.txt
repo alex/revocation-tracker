@@ -20,7 +20,7 @@ markupsafe==1.0           # via jinja2
 pathlib==1.0.1
 psycopg2==2.7.4
 six==1.11.0               # via automat, cryptography
-sqlalchemy==1.2.2
+sqlalchemy==1.2.3
 twisted==17.9.0
 werkzeug==0.14.1
 wsgi-sslify==1.0.1
