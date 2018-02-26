@@ -11,7 +11,7 @@ click==6.7
 constantly==15.1.0        # via twisted
 cryptography==2.1.4
 enum34==1.1.6             # via cryptography
-hyperlink==17.3.1         # via twisted
+hyperlink==18.0.0         # via twisted
 idna==2.6                 # via cryptography
 incremental==17.5.0       # via twisted
 ipaddress==1.0.19         # via cryptography
