@@ -24,6 +24,7 @@ from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet.task import react
 from twisted.internet.threads import deferToThread
 from twisted.logger import Logger
+from twisted.python.failure import Failure
 from twisted.web import server, wsgi
 
 from werkzeug import routing
@@ -410,9 +411,10 @@ class CrtshChecker(object):
 
 
 class WSGIApplication(object):
-    def __init__(self, cert_db, crtsh_checker):
+    def __init__(self, cert_db, crtsh_checker, logger):
         self.cert_db = cert_db
         self.crtsh_checker = crtsh_checker
+        self.logger = logger
 
         self.jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(
@@ -467,6 +469,9 @@ class WSGIApplication(object):
             return endpoint(request, **args)
         except HTTPException as e:
             return e.get_response(request.environ)
+        except Exception:
+            self.logger.failure("Error in HTTP handler", Failure())
+            raise
 
     def render_template(self, template_name, **context):
         t = self.jinja_env.get_template(template_name)
@@ -663,7 +668,8 @@ def remove_certificate(db_uri, crtsh_id):
 def run(port, db_uri, hsts):
     cert_db = CertificateDatabase(db_uri)
     crtsh_checker = CrtshChecker()
-    app = raw_app = WSGIApplication(cert_db, crtsh_checker)
+    logger = Logger()
+    app = raw_app = WSGIApplication(cert_db, crtsh_checker, logger)
     if hsts:
         app = wsgi_sslify.sslify(app, subdomains=True)
 
@@ -676,7 +682,6 @@ def run(port, db_uri, hsts):
             )
         ).setServiceParent(multi)
 
-        logger = Logger()
         TimerService(
             # Run every 10 minutes
             10 * 60,
