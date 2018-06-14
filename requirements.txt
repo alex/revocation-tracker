@@ -6,7 +6,7 @@
 #
 asn1crypto==0.24.0        # via cryptography
 attrs==18.1.0
-automat==0.6.0            # via twisted
+automat==0.7.0            # via twisted
 click==6.7
 constantly==15.1.0        # via twisted
 cryptography==2.2.2
