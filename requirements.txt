@@ -7,7 +7,7 @@
 asn1crypto==0.24.0        # via cryptography
 attrs==18.2.0
 automat==0.7.0            # via twisted
-click==6.7
+click==7.0
 constantly==15.1.0        # via twisted
 cryptography==2.3.1
 enum34==1.1.6             # via cryptography
