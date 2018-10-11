@@ -470,6 +470,7 @@ class WSGIApplication(object):
         except HTTPException as e:
             return e.get_response(request.environ)
         except Exception:
+            import traceback; traceback.print_exc()
             self.logger.failure("Error in HTTP handler", Failure())
             raise
 
