@@ -126,7 +126,7 @@ class CertificateDatabase(object):
                 sqlalchemy.ForeignKey("batches.id")
             ),
         )
-        self._engine = sqlalchemy.create_engine(db_uri, isolation_level="AUTOCOMMIT")
+        self._engine = sqlalchemy.create_engine(db_uri)
 
     def add_certificates(self, certs):
         self._engine.execute(self._certs.insert().values([
@@ -261,7 +261,8 @@ class CertificateDatabase(object):
 class CrtshChecker(object):
     def __init__(self):
         self._engine = sqlalchemy.create_engine(
-            "postgresql://guest@crt.sh:5432/certwatch"
+            "postgresql://guest@crt.sh:5432/certwatch",
+            isolation_level="AUTOCOMMIT",
         )
 
     def get_replication_lag(self):
@@ -470,7 +471,6 @@ class WSGIApplication(object):
         except HTTPException as e:
             return e.get_response(request.environ)
         except Exception:
-            import traceback; traceback.print_exc()
             self.logger.failure("Error in HTTP handler", Failure())
             raise
 
