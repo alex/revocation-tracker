@@ -270,7 +270,7 @@ class CrtshChecker(object):
             return self._engine.execute(
                 "SELECT now() - pg_last_xact_replay_timestamp()"
             ).scalar()
-        except sqlalchemy.exc.OperationalError:
+        except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.DatabaseError):
             return None
 
     def fetch_details(self, crtsh_ids):
