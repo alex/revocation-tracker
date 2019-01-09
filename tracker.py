@@ -265,16 +265,21 @@ class CrtshChecker(object):
             isolation_level="AUTOCOMMIT",
         )
 
+    def _execute(self, *args):
+        for _ in xrange(3):
+            try:
+                return self._engine.execute(*args)
+            except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.DatabaseError):
+                continue
+        return self._engine.execute(*args)
+
     def get_replication_lag(self):
-        try:
-            return self._engine.execute(
-                "SELECT now() - pg_last_xact_replay_timestamp()"
-            ).scalar()
-        except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.DatabaseError):
-            return None
+        return self._execute(
+            "SELECT now() - pg_last_xact_replay_timestamp()"
+        ).scalar()
 
     def fetch_details(self, crtsh_ids):
-        rows = self._engine.execute("""
+        rows = self._execute("""
         SELECT
             c.id, c.certificate, array_agg(DISTINCT cc.ca_owner)
         FROM certificate c
@@ -320,7 +325,7 @@ class CrtshChecker(object):
     def check_revocations(self, crtsh_ids):
         if not crtsh_ids:
             return {}
-        rows = self._engine.execute("""
+        rows = self._execute("""
         SELECT
             c.id, crl.revocation_date
         FROM
@@ -337,7 +342,7 @@ class CrtshChecker(object):
         return revocation_dates
 
     def get_recent_lint_summaries(self, linter, since):
-        min_id = self._engine.execute("""
+        min_id = self._execute("""
         SELECT
             MAX(cte.certificate_id)
         FROM
@@ -345,7 +350,7 @@ class CrtshChecker(object):
         WHERE
             cte.entry_timestamp < %s
         """, [since]).scalar()
-        rows = self._engine.execute("""
+        rows = self._execute("""
         WITH trusted_cas AS (
             SELECT ca_id
             FROM ca_trust_purpose
