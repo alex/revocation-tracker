@@ -266,7 +266,7 @@ class CrtshChecker(object):
         )
 
     def _execute(self, *args):
-        for _ in xrange(3):
+        for _ in range(3):
             try:
                 return self._engine.execute(*args)
             except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.DatabaseError):
