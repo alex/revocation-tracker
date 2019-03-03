@@ -5,7 +5,7 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 asn1crypto==0.24.0        # via cryptography
-attrs==18.2.0
+attrs==19.1.0
 automat==0.7.0            # via twisted
 click==7.0
 constantly==15.1.0        # via twisted
