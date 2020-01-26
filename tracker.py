@@ -529,9 +529,9 @@ class WSGIApplication(object):
 
     def create_batch(self, request):
         if request.method == "POST":
-            description = request.form["description"]
+            description = request.form["description"].strip()
             crtsh_ids = self._parse_ids(request.form["crtsh-ids"])
-            if not crtsh_ids:
+            if not crtsh_ids or not description:
                 return redirect("/")
 
             crtsh_ids = self._add_crtsh_ids(crtsh_ids)
