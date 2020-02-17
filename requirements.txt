@@ -11,7 +11,7 @@ click==7.0
 constantly==15.1.0        # via twisted
 cryptography==2.8
 hyperlink==19.0.0         # via twisted
-idna==2.8                 # via hyperlink
+idna==2.9                 # via hyperlink
 incremental==17.5.0       # via twisted
 jinja2==2.11.1
 markupsafe==1.1.1         # via jinja2
