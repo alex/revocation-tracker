@@ -85,7 +85,7 @@ class CertificateDatabase(object):
             "certificates", self._metadata,
             sqlalchemy.Column(
                 "crtsh_id",
-                sqlalchemy.Integer(),
+                sqlalchemy.BigInteger(),
                 primary_key=True,
                 nullable=False
             ),
@@ -117,7 +117,7 @@ class CertificateDatabase(object):
             "batch_entries", self._metadata,
             sqlalchemy.Column(
                 "crtsh_id",
-                sqlalchemy.Integer,
+                sqlalchemy.BigInteger,
                 sqlalchemy.ForeignKey("certificates.crtsh_id")
             ),
             sqlalchemy.Column(
