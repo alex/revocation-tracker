@@ -197,6 +197,14 @@ class CertificateDatabase(object):
 
         return valid, expired, revoked
 
+    def get_unrevoked_certificates(self):
+        return [
+            self._cert_from_row(row) for row in
+            self._engine.execute(
+                self._certs.select().where(self._certs.c.revoked_at.is_(None))
+            )
+        ]
+
     def mark_revoked(self, cert, revocation_date):
         cert.revoked_at = revocation_date
         self._engine.execute(
@@ -614,7 +622,7 @@ class WSGIApplication(object):
 
 def check_for_revocation(cert_db, crtsh_checker):
     print("[checking for revocations]")
-    (certs, _, _) = cert_db.get_all_certificates()
+    certs = cert_db.get_unrevoked_certificates()
     revocations = crtsh_checker.check_revocations(
         [c.certificate.crtsh_id for c in certs]
     )
