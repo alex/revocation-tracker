@@ -201,7 +201,10 @@ class CertificateDatabase(object):
         return [
             self._cert_from_row(row) for row in
             self._engine.execute(
-                self._certs.select().where(self._certs.c.revoked_at.is_(None))
+                self._certs.select().where(sqlalchemy.and_(
+                    self._certs.c.revoked_at.is_(None),
+                    self._certs.c.expiration_date > datetime.datetime.utcnow(),
+                ))
             )
         ]
 
