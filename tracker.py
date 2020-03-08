@@ -458,7 +458,7 @@ class WSGIApplication(object):
                 endpoint=self.list_batches,
             ),
             routing.Rule(
-                "/batch/<batch_id>/",
+                "/batch/<int:batch_id>/",
                 methods=["GET"],
                 endpoint=self.batch,
             ),
