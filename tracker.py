@@ -336,7 +336,7 @@ class CrtshChecker(object):
     def check_revocations(self, crtsh_ids):
         if not crtsh_ids:
             return {}
-        rows = self._execute("""
+        crl_rows = self._execute("""
         SELECT
             c.id, crl.revocation_date
         FROM
@@ -348,8 +348,36 @@ class CrtshChecker(object):
             c.id IN %s
         """, [(tuple(crtsh_ids),)])
         revocation_dates = {}
-        for (crtsh_id, revocation_date) in rows:
+        for (crtsh_id, revocation_date) in crl_rows:
             revocation_dates[crtsh_id] = revocation_date
+
+        ocsp_rows = self._execute("""
+        SELECT
+            c.id, ocsp_embedded(
+                c.certificate,
+                (
+                    SELECT ca.certificate
+                    FROM certificate ca
+                    INNER JOIN ca_certificate cac ON ca.id = cac.certificate_id
+                    WHERE
+                        cac.ca_id = c.issuer_ca_id
+                    LIMIT 1
+                )
+            )
+        FROM
+            certificate c
+        WHERE
+            c.id IN %s AND
+            x509_issuerName(c.certificate) LIKE E'%Let\'s Encrypt%'
+        """, [(tuple([c for c in crtsh_ids if c not in revocation_dates]),)])
+        for (crtsh_id, revocation_info) in ocsp_rows:
+            if revocation_info.startswith("Revoked|"):
+                _, revocation_date, _ = revocation_info.split("|", 2)
+                revocation_dates[crtsh_id] = datetime.datetime.strptime(
+                    revocation_date,
+                    "%Y-%m-%d %H:%M:%S %z UTC"
+                )
+
         return revocation_dates
 
     def get_recent_lint_summaries(self, linter, since):
