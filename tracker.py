@@ -376,7 +376,8 @@ class CrtshChecker(object):
                 c.id IN %s AND
                 (
                     x509_issuerName(c.certificate) LIKE E'%%Let\\'s Encrypt%%' OR
-                    x509_issuerName(c.certificate) LIKE E'%%14R-CA 1:PN%%'
+                    x509_issuerName(c.certificate) LIKE E'%%14R-CA 1:PN%%' OR
+                    x509_issuerName(c.certificate) LIKE E'%%AC DNIE 001%%'
                 )
             """, [(tuple(remaining_crtsh_ids),)])
             for (crtsh_id, revocation_info) in ocsp_rows:
