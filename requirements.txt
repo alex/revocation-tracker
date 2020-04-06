@@ -16,7 +16,7 @@ incremental==17.5.0       # via twisted
 jinja2==2.11.1            # via -r requirements.in
 markupsafe==1.1.1         # via jinja2
 pathlib==1.0.1            # via -r requirements.in
-psycopg2==2.8.4           # via -r requirements.in
+psycopg2==2.8.5           # via -r requirements.in
 pycparser==2.20           # via cffi
 pyhamcrest==2.0.2         # via twisted
 six==1.14.0               # via automat, cryptography
