@@ -7,7 +7,7 @@
 attrs==19.3.0             # via -r requirements.in, automat, twisted
 automat==20.2.0           # via twisted
 cffi==1.14.0              # via cryptography
-click==7.1.1              # via -r requirements.in
+click==7.1.2              # via -r requirements.in
 constantly==15.1.0        # via twisted
 cryptography==2.9.2       # via -r requirements.in
 hyperlink==19.0.0         # via twisted
