@@ -318,7 +318,7 @@ class CrtshChecker(object):
                 san = cert.extensions.get_extension_for_class(
                     x509.SubjectAlternativeName
                 )
-            except x509.ExtensionNotFound:
+            except (x509.ExtensionNotFound, ValueError):
                 san_domains = None
             else:
                 san_domains = san.value.get_values_for_type(x509.DNSName)
