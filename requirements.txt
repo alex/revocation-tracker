@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-attrs==20.1.0             # via -r requirements.in, automat, twisted
+attrs==20.2.0             # via -r requirements.in, automat, twisted
 automat==20.2.0           # via twisted
 cffi==1.14.0              # via cryptography
 click==7.1.2              # via -r requirements.in
