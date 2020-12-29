@@ -24,4 +24,4 @@ sqlalchemy==1.3.20        # via -r requirements.in
 twisted==20.3.0           # via -r requirements.in
 werkzeug==1.0.1           # via -r requirements.in, wsgi-sslify
 wsgi-sslify==1.0.1        # via -r requirements.in
-zope.interface==4.7.1     # via twisted
+zope.interface==4.7.2     # via twisted
