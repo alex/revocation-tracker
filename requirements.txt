@@ -11,7 +11,7 @@ click==7.1.2              # via -r requirements.in
 constantly==15.1.0        # via twisted
 cryptography==3.3.1       # via -r requirements.in
 hyperlink==20.0.1         # via twisted
-idna==2.10                # via hyperlink
+idna==3.0                 # via hyperlink
 incremental==17.5.0       # via twisted
 jinja2==2.11.2            # via -r requirements.in
 markupsafe==1.1.1         # via jinja2
