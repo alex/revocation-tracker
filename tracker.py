@@ -126,7 +126,7 @@ class CertificateDatabase(object):
                 sqlalchemy.ForeignKey("batches.id")
             ),
         )
-        self._engine = sqlalchemy.create_engine(db_uri)
+        self._engine = sqlalchemy.create_engine(db_uri.replace("postgres://", "postgresql://"))
 
     def add_certificates(self, certs):
         self._engine.execute(self._certs.insert().values([
