@@ -27,9 +27,9 @@ idna==3.1
     # via hyperlink
 incremental==21.3.0
     # via twisted
-jinja2==2.11.3
+jinja2==3.0.0
     # via -r requirements.in
-markupsafe==1.1.1
+markupsafe==2.0.0
     # via jinja2
 pathlib==1.0.1
     # via -r requirements.in
