@@ -43,7 +43,7 @@ sqlalchemy==1.4.15
     # via -r requirements.in
 twisted==21.2.0
     # via -r requirements.in
-werkzeug==2.0.0
+werkzeug==2.0.1
     # via
     #   -r requirements.in
     #   wsgi-sslify
