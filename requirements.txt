@@ -19,7 +19,7 @@ constantly==15.1.0
     # via twisted
 cryptography==3.4.7
     # via -r requirements.in
-greenlet==1.1.0
+greenlet==1.1.1
     # via sqlalchemy
 hyperlink==21.0.0
     # via twisted
