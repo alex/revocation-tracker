@@ -27,7 +27,7 @@ idna==3.2
     # via hyperlink
 incremental==21.3.0
     # via twisted
-jinja2==3.0.1
+jinja2==3.0.2
     # via -r requirements.in
 markupsafe==2.0.1
     # via jinja2
