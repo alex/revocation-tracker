@@ -11,7 +11,7 @@ attrs==21.2.0
     #   twisted
 automat==20.2.0
     # via twisted
-cffi==1.14.6
+cffi==1.15.0
     # via cryptography
 click==8.0.3
     # via -r requirements.in
