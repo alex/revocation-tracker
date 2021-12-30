@@ -33,7 +33,7 @@ markupsafe==2.0.1
     # via jinja2
 pathlib==1.0.1
     # via -r requirements.in
-psycopg2==2.9.2
+psycopg2==2.9.3
     # via -r requirements.in
 pycparser==2.21
     # via cffi
