@@ -39,7 +39,7 @@ pycparser==2.21
     # via cffi
 six==1.16.0
     # via automat
-sqlalchemy==1.4.30
+sqlalchemy==1.4.31
     # via -r requirements.in
 twisted==21.7.0
     # via -r requirements.in
