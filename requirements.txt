@@ -41,7 +41,7 @@ six==1.16.0
     # via automat
 sqlalchemy==1.4.31
     # via -r requirements.in
-twisted==21.7.0
+twisted==22.1.0
     # via -r requirements.in
 typing-extensions==4.0.1
     # via twisted
