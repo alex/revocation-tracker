@@ -45,7 +45,7 @@ twisted==22.1.0
     # via -r requirements.in
 typing-extensions==4.0.1
     # via twisted
-werkzeug==2.0.2
+werkzeug==2.0.3
     # via
     #   -r requirements.in
     #   wsgi-sslify
