@@ -29,7 +29,7 @@ incremental==21.3.0
     # via twisted
 jinja2==3.0.3
     # via -r requirements.in
-markupsafe==2.0.1
+markupsafe==2.1.0
     # via jinja2
 pathlib==1.0.1
     # via -r requirements.in
