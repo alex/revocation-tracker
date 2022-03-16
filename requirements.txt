@@ -17,7 +17,7 @@ click==8.0.4
     # via -r requirements.in
 constantly==15.1.0
     # via twisted
-cryptography==36.0.1
+cryptography==36.0.2
     # via -r requirements.in
 greenlet==1.1.2
     # via sqlalchemy
