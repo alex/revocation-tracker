@@ -13,7 +13,7 @@ automat==20.2.0
     # via twisted
 cffi==1.15.0
     # via cryptography
-click==8.0.4
+click==8.1.0
     # via -r requirements.in
 constantly==15.1.0
     # via twisted
