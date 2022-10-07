@@ -45,7 +45,7 @@ sqlalchemy==1.4.41
     # via -r requirements.in
 twisted==22.8.0
     # via -r requirements.in
-typing-extensions==4.3.0
+typing-extensions==4.4.0
     # via twisted
 werkzeug==2.2.2
     # via
