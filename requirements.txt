@@ -53,5 +53,5 @@ werkzeug==2.2.2
     #   wsgi-sslify
 wsgi-sslify==1.0.1
     # via -r requirements.in
-zope-interface==5.4.0
+zope-interface==5.5.0
     # via twisted
