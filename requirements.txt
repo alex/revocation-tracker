@@ -29,7 +29,7 @@ incremental==22.10.0
     # via twisted
 jinja2==3.1.2
     # via -r requirements.in
-markupsafe==2.1.1
+markupsafe==2.1.2
     # via
     #   jinja2
     #   werkzeug
