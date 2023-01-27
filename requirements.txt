@@ -41,12 +41,14 @@ pycparser==2.21
     # via cffi
 six==1.16.0
     # via automat
-sqlalchemy==1.4.46
+sqlalchemy==2.0.0
     # via -r requirements.in
 twisted==22.10.0
     # via -r requirements.in
 typing-extensions==4.4.0
-    # via twisted
+    # via
+    #   sqlalchemy
+    #   twisted
 werkzeug==2.2.2
     # via
     #   -r requirements.in
